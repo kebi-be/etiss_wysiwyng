@@ -1,203 +1,164 @@
 # -------------------  ETISS CI flow  --------------------------
 # Build process is written in shell
-# Testers are written in python for easily plugging in new tester
-# All script is located in ./ci directory
+#
 # --------------------------------------------------------------
 
-image: gitlab.lrz.de:5005/de-tum-ei-eda-esl/etiss:latest
+image: docker
+
+variables:
+  # When you use the dind service, you must instruct Docker to talk with
+  # the daemon started inside of the service. The daemon is available
+  # with a network connection instead of the default
+  # /var/run/docker.sock socket. Docker 19.03 does this automatically
+  # by setting the DOCKER_HOST in
+  # https://github.com/docker-library/docker/blob/d45051476babc297257df490d22cbd806f1b11e4/19.03/docker-entrypoint.sh#L23-L29
+  #
+  # The 'docker' hostname is the alias of the service container as described at
+  # https://docs.gitlab.com/ee/ci/services/#accessing-the-services.
+  #
+  # Specify to Docker where to create the certificates. Docker
+  # creates them automatically on boot, and creates
+  # `/certs/client` to share between the service and job
+  # container, thanks to volume mount from config.toml
+  DOCKER_TLS_CERTDIR: "/certs"
+
+  #Specify Name of User for Building and Testing Code. Tests must not be run as root as some test fail due to
+  # access rights if run as root
+  ETISS_BUILD_TEST_USER: "s4e-builder"
+  #Specify PATH on Host and Container for mounting volumes
+  ETISS_SRC_VOLUME: "/var/lib/docker/volumes/s4e_src/_data/$CI_COMMIT_BRANCH"
+  ETISS_BUILD_VOLUME: "/var/lib/docker/volumes/s4e_build/_data/$CI_COMMIT_BRANCH"
+  ETISS_INSTALL_VOLUME: "/var/lib/docker/volumes/s4e_install/_data/$CI_COMMIT_BRANCH"
+  #ETISS_SRC_VOLUME: "/space/bkebianyor/build/s4e_src/$CI_COMMIT_BRANCH"
+  #ETISS_BUILD_VOLUME: "/space/bkebianyor/build/s4e_build/$CI_COMMIT_BRANCH"
+  #ETISS_INSTALL_VOLUME: "/space/bkebianyor/build/s4e_install/$CI_COMMIT_BRANCH"
+
+  ETISS_GCC_INSTALL_VOLUME: "/opt/"
+  ETISS_SRC_DIR: "/home/$ETISS_BUILD_TEST_USER/src"
+  ETISS_BUILD_DIR: "/home/$ETISS_BUILD_TEST_USER/build"
+  ETISS_INSTALL_DIR: "/home/$ETISS_BUILD_TEST_USER/install"
+  ETISS_DOCKER_IMAGE: "localhost:5000/s4e-etiss-builder"
+  ETISS_BUILDER_UID_GID: "2001" #this value can be any value to be used for adding a new user. Same id will be used for the group
+  GITLAB_RUNNER_HOST_DNS: $GITLAB_RUNNER_HOST_DNS
+  GIT_SUBMODULE_STRATEGY: recursive
+  GIT_CLONE_PATH: "/src/$CI_COMMIT_BRANCH/$CI_PROJECT_NAME"
 
 stages:
+  - update
   - build
+  - generate
   - test
-  - gdbtest
   - deploy
 
-#before_script:
+services:
+ - docker:19.03.12-dind
 
+workflow:
+  rules:
+    - if: $CI_COMMIT_MESSAGE =~ /-wip$/ # Never run pipeline if CI_COMMIT_MESSAGE contains -no-build otherwise always
+      when: never
+    - when: always
 
-Build:
+update:
+  stage: update
+  script:
+    - echo " This is a downstream pipeline from  $S4E_SOURCE_PIPELINE"
+    - echo this source is from $CI_PIPELINE_SOURCE
+    - docker run --rm -t --dns $GITLAB_RUNNER_HOST_DNS -v $ETISS_SRC_VOLUME:$ETISS_SRC_DIR -v $ETISS_BUILD_VOLUME:$ETISS_BUILD_DIR -v $ETISS_INSTALL_VOLUME:$ETISS_INSTALL_DIR -v $ETISS_GCC_INSTALL_VOLUME:$ETISS_GCC_INSTALL_VOLUME $ETISS_DOCKER_IMAGE $ETISS_BUILD_TEST_USER $ETISS_BUILDER_UID_GID s4emac update
+  tags:
+    - docker-riscv
+
+build_etiss:
   stage: build
   script:
-    - whoami
-    - echo $HOME
-    - sh ./ci/build.sh
-  cache:
-    key: build_cache
-    paths:
-      - "build_dir"
-      - "ci/tester.log"
-
-# Manually re-build project in GitLab GUI
-ReBuild:
-  stage: build
-  script:
-    - rm -rf build_dir
-    - sh ./ci/build.sh
-  cache:
-    key: build_cache
-    paths:
-      - "build_dir"
-  when: manual
-
-FailuerHandling:
-  stage: test
-  script:
-    - rm -rf build_dir
-  when: manual
-
-Or1kTester:
-  stage: test
-  script:
-    - cd ci
-    - python3 Tester.py -arch Or1k
-    - cd ..
-#  only:
-#    - master
-#    - '/.*[oO][rR]1[kK].*/'
-  cache:
-    key: build_cache
-    paths:
-      - "build_dir"
-      - "ci/tester.log"
-
+    - docker run --rm -t --dns $GITLAB_RUNNER_HOST_DNS -v $ETISS_SRC_VOLUME:$ETISS_SRC_DIR -v $ETISS_BUILD_VOLUME:$ETISS_BUILD_DIR -v $ETISS_INSTALL_VOLUME:$ETISS_INSTALL_DIR -v $ETISS_GCC_INSTALL_VOLUME:$ETISS_GCC_INSTALL_VOLUME $ETISS_DOCKER_IMAGE $ETISS_BUILD_TEST_USER $ETISS_BUILDER_UID_GID s4emac build_etiss
+  tags:
+    - docker-riscv
   dependencies:
-    - Build
-  artifacts:
-    paths:
-        - "ci/tester.log"
-    expire_in: 2 weeks
+     - update
+  rules:
+    - if: ($CI_PIPELINE_SOURCE != "pipeline")
+      when: always
+    - when: never
 
-RiscvTester:
-  stage: test
+generate_custom_etiss_arch:
+  stage: generate
   script:
-    - cd ci
-    - python3 Tester.py -arch RISCV
-    - cd ..
-#  only:
-#    - master
-#    - '/.*[rR][iI][sS][cC]-?_?[vV].*/'
-  cache:
-    key: build_cache
-    paths:
-      - "build_dir"
-      - "ci/tester.log"
-  dependencies:
-    - Build
-  artifacts:
-    paths:
-        - "ci/tester.log"
-    expire_in: 2 weeks
-    
-# Testers in the following are architecture specific testers.
-# Note: Use the following part for testing ARM if available
-#Armv6MTester:
-#  stage: test
-#  script:
-#    - cd ci
-#    - python3 Tester.py -arch Armv6M
-#    - cd ..
-#  only:
-#    - master
-#    - '/.*[aA][rR][mM][vV]?6?[mM]?.*/'
-#  cache:
-#    key: build_cache
-#    paths:
-#      - "build_dir"
-#      - "ci/tester.log"
+    - echo $BUILD_VERSION
+    - echo $UPSTREAM_ARTIFACT_REF
+    - echo $UPSTREAM_PROJECT
+    - docker run --rm -t --dns $GITLAB_RUNNER_HOST_DNS -v $ETISS_SRC_VOLUME:$ETISS_SRC_DIR -v $ETISS_BUILD_VOLUME:$ETISS_BUILD_DIR -v $ETISS_INSTALL_VOLUME:$ETISS_INSTALL_DIR -v $ETISS_GCC_INSTALL_VOLUME:$ETISS_GCC_INSTALL_VOLUME $ETISS_DOCKER_IMAGE $ETISS_BUILD_TEST_USER $ETISS_BUILDER_UID_GID s4emac generate_custom_iss
+  tags:
+    - docker-riscv
+  rules:
+    - if: (($CI_PIPELINE_SOURCE == "pipeline") || ($S4E_SOURCE_PIPELINE == "llvm"))
+      when: always
+    - when: never
+
+#build_custom_iss:
+ # stage: build
+ # script:
+ #   - docker run --rm -t --dns $GITLAB_RUNNER_HOST_DNS -v $ETISS_SRC_VOLUME:$ETISS_SRC_DIR -v $ETISS_BUILD_VOLUME:$ETISS_BUILD_DIR -v $ETISS_INSTALL_VOLUME:$ETISS_INSTALL_DIR -v $ETISS_GCC_INSTALL_VOLUME:$ETISS_GCC_INSTALL_VOLUME $ETISS_DOCKER_IMAGE $ETISS_BUILD_TEST_USER $ETISS_BUILDER_UID_GID s4emac build_custom_iss
+  #  - pwd
+   # - cd /home/
+    #- ls -al
+   # - pwd
+  #tags:
+   # - docker-riscv
+  #dependencies:
+   #  - generate_custom_iss
+  #rules:
+   # - if: (($CI_PIPELINE_SOURCE == "pipeline") || ($S4E_SOURCE_PIPELINE == "llvm"))
+    #  when: always
+    #- when: never
+
+   
+#download-test-files:
+ # stage: test
+  #image: ubuntu
+  #before_script:
+   # - apt-get update &&  DEBIAN_FRONTEND=noninteractive apt-get install -y jq git unzip curl && \   apt clean && rm -rf /var/lib/apt/lists/*
+  #variables:
+   # GIT_STRATEGY: none
+  #rules: #Only run test jobs for scheduled pipelines. Pipelines will be scheduled to run once on nightly builds
+   # - if: (($CI_PIPELINE_SOURCE == "pipeline") && ($S4E_SOURCE_PIPELINE == "llvm"))
+    #  when: always
+    #- when: never
+ # script:
+  #  - pwd
+   # - cd "/src/$CI_COMMIT_BRANCH/$CI_PROJECT_NAME"
+    #- chmod 755 download-llvm-test-files.sh
+#    - ./download-llvm-test-files.sh $CI_S4E_LLVM_ACCESS_TOKEN_VAR $S4E_SOURCE_PIPELINE
+#    - ls -al
+#    - unzip  -o ./artifacts.zip -d .
+#    - ls -al
+#  tags:
+#    - docker-riscv
 #  dependencies:
-#    - Build
-#  artifacts:
-#    paths:
-#        - "ci/tester.log"
-#    expire_in: 2 weeks
+#    - update
 
-Or1kGDBTester:
-  stage: gdbtest
-  script:
-    - cd ci
-    - python3 Tester.py -arch Or1k -gdb
-    - cd ..
-  cache:
-    key: build_cache
-    paths:
-      - "build_dir"
-      - "ci/tester.log"
-#  only:
-#    - master
-#    - '/.*[oO][rR]1[kK].*/'
-  dependencies:
-    - Or1kTester
-    
-RiscvGDBTester:
-  stage: gdbtest
-  script:
-    - cd ci
-    - python3 Tester.py -arch RISCV -gdb
-  cache:
-    key: build_cache
-    paths:
-      - "build_dir"
-      - "ci/tester.log"
-#  only:
-#    - master
-#    - '/.*[rR][iI][sS][cC]-?_?[vV].*/'
-  dependencies:
-    - RiscvTester
-
-# Note: use this part for testing ARM if available.
-#Armv6MGDBTester:
-#  stage: gdbtest
-#  script:
-#    - cd ci
-#    - python3 Tester.py -arch Armv6M -gdb
-#    - cd ..
-#  cache:
-#    key: build_cache
-#    paths:
-#      - "build_dir"
-#      - "ci/tester.log"
-#  only:
-#    - master
-#    - '/.*[aA][rR][mM][vV]?6?[mM]?.*/'
-#  dependencies:
-#    - Armv6MTester
-
-CITester:
+test:
   stage: test
+  rules: #Only run test jobs for scheduled pipelines. Pipelines will be scheduled to run once on nightly builds
+    - if: (($CI_PIPELINE_SOURCE == "pipeline") && ($S4E_SOURCE_PIPELINE == "llvm"))
+      when: always
+    - when: never
   script:
-    - cd ci
-    - python3 Tester.py
-    - cd ..
-  only:
-    - CI_dev
-  cache:
-    key: build_cache
-    paths:
-      - "build_dir"
-      - "ci/tester.log"
-  dependencies:
-    - Build
-  artifacts:
-    paths:
-        - "ci/tester.log"
-    expire_in: 2 weeks
+   - ls -al
+   - echo "Pipeline is from $S4E_SOURCE_PIPELINE and Job is $CI_JOB_NAME "
+   - docker run --rm -t --dns $GITLAB_RUNNER_HOST_DNS -v $ETISS_SRC_VOLUME:$ETISS_SRC_DIR -v $ETISS_BUILD_VOLUME:$ETISS_BUILD_DIR -v $ETISS_INSTALL_VOLUME:$ETISS_INSTALL_DIR -v $ETISS_GCC_INSTALL_VOLUME:$ETISS_GCC_INSTALL_VOLUME $ETISS_DOCKER_IMAGE $ETISS_BUILD_TEST_USER $ETISS_BUILDER_UID_GID s4emac check
+  allow_failure: false
+  tags:
+   - docker-riscv
+#  needs: [download-test-files]
 
-Deploy:
+deploy_staging:
   stage: deploy
   script:
-    -  echo "Not implemented"
-  cache:
-    key: build_cache
-    paths:
-      - "build_dir"
-      - "ci/tester.log"
-  when: manual
-
-deploy docker container:
-  stage: build
-  when: manual
-  script:
-    - cd ci
-    - docker build -t gitlab.lrz.de:5005/de-tum-ei-eda-esl/etiss .
-    - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN gitlab.lrz.de:5005/de-tum-ei-eda-esl/etiss
-    - docker push gitlab.lrz.de:5005/de-tum-ei-eda-esl/etiss
+    - echo "Deploy to staging server"
+  environment:
+    name: staging
+    url: https://teamsites-extranet.dlr.de/sites/SE/Dokumente/DLRSE/04-Projects/03-Drittmittelprojekte_(3er_Kostentr%C3%A4ger)/Scale4Edge/5-Work/CICD_staging_test
+  dependencies:
+    - test
+                                                           
