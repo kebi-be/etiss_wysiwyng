@@ -106,7 +106,7 @@ build_custom_iss:
   tags:
     - docker-riscv
   dependencies:
-    - generate_custom_iss
+    - generate_custom_etiss_arch
   rules:
     - if: (($CI_PIPELINE_SOURCE == "pipeline") || ($S4E_SOURCE_PIPELINE == "llvm"))
       when: always
