@@ -95,22 +95,22 @@ generate_custom_etiss_arch:
       when: always
     - when: never
 
-#build_custom_iss:
- # stage: build
- # script:
- #   - docker run --rm -t --dns $GITLAB_RUNNER_HOST_DNS -v $ETISS_SRC_VOLUME:$ETISS_SRC_DIR -v $ETISS_BUILD_VOLUME:$ETISS_BUILD_DIR -v $ETISS_INSTALL_VOLUME:$ETISS_INSTALL_DIR -v $ETISS_GCC_INSTALL_VOLUME:$ETISS_GCC_INSTALL_VOLUME $ETISS_DOCKER_IMAGE $ETISS_BUILD_TEST_USER $ETISS_BUILDER_UID_GID s4emac build_custom_iss
-  #  - pwd
-   # - cd /home/
-    #- ls -al
-   # - pwd
-  #tags:
-   # - docker-riscv
-  #dependencies:
-   #  - generate_custom_iss
-  #rules:
-   # - if: (($CI_PIPELINE_SOURCE == "pipeline") || ($S4E_SOURCE_PIPELINE == "llvm"))
-    #  when: always
-    #- when: never
+build_custom_iss:
+  stage: build
+  script:
+    - docker run --rm -t --dns $GITLAB_RUNNER_HOST_DNS -v $ETISS_SRC_VOLUME:$ETISS_SRC_DIR -v $ETISS_BUILD_VOLUME:$ETISS_BUILD_DIR -v $ETISS_INSTALL_VOLUME:$ETISS_INSTALL_DIR -v $ETISS_GCC_INSTALL_VOLUME:$ETISS_GCC_INSTALL_VOLUME $ETISS_DOCKER_IMAGE $ETISS_BUILD_TEST_USER $ETISS_BUILDER_UID_GID s4emac build_custom_iss
+    - pwd
+    - cd /home/
+    - ls -al
+    - pwd
+  tags:
+    - docker-riscv
+  dependencies:
+    - generate_custom_iss
+  rules:
+    - if: (($CI_PIPELINE_SOURCE == "pipeline") || ($S4E_SOURCE_PIPELINE == "llvm"))
+      when: always
+    - when: never
 
    
 #download-test-files:
