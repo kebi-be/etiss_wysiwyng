@@ -45,8 +45,8 @@ variables:
 
 stages:
   - update
-  - build
   - generate
+  - build
   - test
   - deploy
 
