@@ -103,6 +103,8 @@ build_custom_iss:
     - cd /home/
     - ls -al
     - pwd
+  variables:
+    GIT_STRATEGY: none
   tags:
     - docker-riscv
   dependencies:
