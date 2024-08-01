@@ -22,12 +22,13 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/download-artifact@v4
+    - name: Download Core-DSL-Extension Artifacts
+      uses: actions/download-artifact@v4
       with:
-        name: demo-export
-        github-token: ${{ secrets.REPO_ACCESS_TOKEN }} # token with actions:read permissions on target repo
-        repository: kebi/seal5
-    #    run-id: 1234
+        name: riscv-core-dsl-files
+        github-token: ${{ secrets.REPO_PA_TOKEN }}
+        repository: kebi-be/riscv-coredsl-extensions
+        run-id: ${{ github.event.client_payload.run_id }}
     - uses: actions/checkout@v4
       with:
         fetch-depth: 0
