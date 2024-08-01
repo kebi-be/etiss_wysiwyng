@@ -1,8 +1,10 @@
 # This starter workflow is for a CMake project running on a single platform. There is a different starter workflow if you need cross-platform coverage.
 # See: https://github.com/actions/starter-workflows/blob/main/ci/cmake-multi-platform.yml
-name: CMake on a single platform
+name: Build ETISS
 
 on:
+  repository_dispatch:
+    types: [s4e_cdl_event]
   push:
     branches: [ "master" ]
   pull_request:
@@ -13,27 +15,88 @@ env:
   BUILD_TYPE: Release
 
 jobs:
-  build:
+  update:
     # The CMake configure and build commands are platform agnostic and should work equally well on Windows or Mac.
     # You can convert this to a matrix build if you need cross-platform coverage.
     # See: https://docs.github.com/en/free-pro-team@latest/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
     runs-on: ubuntu-latest
 
     steps:
+    - uses: actions/download-artifact@v4
+      with:
+        name: demo-export
+        github-token: ${{ secrets.REPO_ACCESS_TOKEN }} # token with actions:read permissions on target repo
+        repository: kebi/seal5
+    #    run-id: 1234
     - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    - name: print trigger details
+      run: |
+        echo ${{ github.event.client_playload.github.action }}
+        echo ${{ github.event.client_playload.github.action }}
+        sudo apt -qq install -y build-essential git cmake libboost-system-dev libboost-filesystem-dev libboost-program-options-dev
 
+  build:
+    # The CMake configure and build commands are platform agnostic and should work equally well on Windows or Mac.
+    # You can convert this to a matrix build if you need cross-platform coverage.
+    # See: https://docs.github.com/en/free-pro-team@latest/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
     - name: Configure CMake
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
       # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
-      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
-
+      run: |
+        pwd
+        echo " running Cmake" # cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}      
+        sudo apt -qq install -y build-essential git cmake libboost-system-dev libboost-filesystem-dev libboost-program-options-dev
+        mkdir build
+        echo "Running build" #cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} 
+        cd build
+        cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=`pwd`/installed ..
+        ls -al
+        pwd
     - name: Build
       # Build your program with the given configuration
-      run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
-
-    - name: Test
-      working-directory: ${{github.workspace}}/build
-      # Execute tests defined by the CMake configuration.
-      # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
-      run: ctest -C ${{env.BUILD_TYPE}}
-
+      run: |
+        cd build
+        ls -al
+        make -j$(nproc)
+        make install 
+          
+    - name: Archive build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+         name: etiss-build-files
+         path: |
+            /home/runner/work/etiss/etiss/build/installed/
+    needs: update
+    
+  test:
+    # The CMake configure and build commands are platform agnostic and should work equally well on Windows or Mac.
+    # You can convert this to a matrix build if you need cross-platform coverage.
+    # See: https://docs.github.com/en/free-pro-team@latest/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
+    runs-on: ubuntu-latest
+    steps:
+    - name: Download build artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: etiss-build-files
+    - name: Download RISCV-GNU-Toolchain  
+      run: |
+         wget https://syncandshare.lrz.de/dl/fi2p5Ds5PHktjmZGKzR9tx/GCC/default/2023.09.27/Ubuntu/22.04/rv32imc_ilp32.tar.xz
+         tar xvf rv32imc_ilp32.tar.xz
+         rm rv32imc_ilp32.tar.xz
+    - name: Build ETISS RISCV Examples for Testing
+      run: |
+        pwd
+        git clone https://github.com/tum-ei-eda/etiss_riscv_examples.git
+        cd etiss_riscv_examples && mkdir build
+        cd build
+        cmake -DCMAKE_TOOLCHAIN_FILE=rv32gc-toolchain.cmake -DRISCV_TOOLCHAIN_PREFIX=../../gnu -DCMAKE_INSTALL_PREFIX=../install ..
+        make install
+    - name: Run ETISS Default Configuration Test
+      run: |
+        etiss-build-files/bin/bare_etiss_processor -i'pwd'/install/ini/hello_world.ini
+    needs: build
