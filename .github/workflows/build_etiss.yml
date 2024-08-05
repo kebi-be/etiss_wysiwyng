@@ -22,6 +22,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+    - name: Print events
+      run: |
+        echo ${{ github.event.client_playload.github.action }}
+        echo ${{ github.event.client_playload.github.action }}
     - name: Download Core-DSL-Extension Artifacts
       uses: actions/download-artifact@v4
       with:
