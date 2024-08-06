@@ -28,7 +28,7 @@ jobs:
 
   update:
     # Only run this job if Workflow is triggered by Riscv-CoreDSL-Extensions
-    if: ${{ github.event_name == 'repository_dispatch' }}
+   # if: ${{ github.event_name == 'repository_dispatch' }}
   
     # The CMake configure and build commands are platform agnostic and should work equally well on Windows or Mac.
     # You can convert this to a matrix build if you need cross-platform coverage.
@@ -36,7 +36,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-
     - name: Print events
       run: |
         echo " Run_ID:" ${{ github.event.client_playload.run_id }} " Event_Type:" ${{ github.event_type }}
@@ -50,7 +49,7 @@ jobs:
         repository: kebi-be/riscv-coredsl-extensions
         run-id: ${{ github.event.client_payload.run_id }}
         
-    needs: setup
+    needs: setup-env
 
   build:
     # The CMake configure and build commands are platform agnostic and should work equally well on Windows or Mac.
