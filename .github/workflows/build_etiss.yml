@@ -5,10 +5,10 @@ name: Build ETISS
 on:
   repository_dispatch:
     types: [s4e_cdl_event, seal5-event]
-  push:
-    branches: [ "master" ]
-  pull_request:
-    branches: [ "master" ]
+#push:
+ #   branches: [ "master" ]
+ # pull_request:
+ #   branches: [ "master" ]
 
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
@@ -24,8 +24,8 @@ jobs:
     steps:
     - name: Print events
       run: |
-        echo ${{ github.event.client_playload.github.action }}
-        echo ${{ github.event.client_playload.github.action }}
+        echo " Run_ID:" ${{ github.event.client_playload.run_id }} " Event_Type:" ${{ github.event_type }}
+        echo ${{ github.event.client_playload.triggered_by }}
     - name: Download Core-DSL-Extension Artifacts
       uses: actions/download-artifact@v4
       with:
