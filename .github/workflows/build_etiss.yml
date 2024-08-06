@@ -26,6 +26,14 @@ jobs:
       run: |
         echo " Run_ID:" ${{ github.event.client_playload.run_id }} " Event_Type:" ${{ github.event_type }}
         echo ${{ github.event.client_playload.triggered_by }}
+    - run: echo ${{ github.event.client_payload.run_id }}  " Repo:"  ${{ github.event.client_payload.triggered_by}} 
+    - name: Download Core-DSL-Extension Artifacts 1
+      uses: actions/download-artifact@v4
+      with:
+        name: riscv-core-dsl-files
+        github-token: ${{ secrets.REPO_PA_TOKEN }}
+        repository: kebi-be/riscv-coredsl-extensions
+        run-id: ${{ github.event.client_payload.run_id }}
     - name: Download Core-DSL-Extension Artifacts
       uses: actions/download-artifact@v4
       with:
