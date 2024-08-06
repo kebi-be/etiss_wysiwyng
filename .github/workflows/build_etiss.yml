@@ -31,14 +31,14 @@ jobs:
       uses: actions/download-artifact@v4
       with:
         name: riscv-core-dsl-files
-        github-token: ${{ secrets.REPO_PA_TOKEN }}
+        github-token: ${{ secrets.REPO_ACCESS_TOKEN }}
         repository: kebi-be/riscv-coredsl-extensions
         run-id: ${{ github.event.client_payload.run_id }}
     - name: Download Core-DSL-Extension Artifacts
       uses: actions/download-artifact@v4
       with:
         name: riscv-core-dsl-files
-        github-token: ${{ secrets.REPO_PA_TOKEN }}
+        github-token: ${{ secrets.REPO_ACCESS_TOKEN }}
         repository: kebi-be/riscv-coredsl-extensions
         run-id: ${{ github.event.client_payload.run_id }}
     - uses: actions/checkout@v4
