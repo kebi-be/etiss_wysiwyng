@@ -1,3 +1,24 @@
+Skip to content
+Navigation Menu
+kebi-be
+/
+etiss_wysiwyng
+
+Type / to search
+Code
+Issues
+Pull requests
+Actions
+Projects
+Security
+Insights
+Settings
+Build ETISS
+s4e_cdl_event #20
+Jobs
+Run details
+Workflow file for this run
+.github/workflows/build_etiss.yml at a14c5a2
 # This starter workflow is for a CMake project running on a single platform. There is a different starter workflow if you need cross-platform coverage.
 # See: https://github.com/actions/starter-workflows/blob/main/ci/cmake-multi-platform.yml
 name: Build ETISS
@@ -14,25 +35,13 @@ env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
   BUILD_TYPE: Release
 
-#jobs:
-  #setup-env:
-   # runs-on: ubuntu-latest
-    #steps:
-    #- name: Setup Build Environment 
-    #- uses: actions/checkout@v4
-     # with:
-      #  fetch-depth: 0
-    #- name: print trigger details
-     # run: |
-      #  sudo apt -qq install -y build-essential git cmake libboost-system-dev libboost-filesystem-dev libboost-program-options-dev
-
 jobs:
-
   update:
     # The CMake configure and build commands are platform agnostic and should work equally well on Windows or Mac.
     # You can convert this to a matrix build if you need cross-platform coverage.
     # See: https://docs.github.com/en/free-pro-team@latest/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
     runs-on: ubuntu-latest
+
     steps:
     - name: Print events
       run: |
@@ -50,27 +59,17 @@ jobs:
       uses: actions/download-artifact@v4
       with:
         name: riscv-core-dsl-files
-        github-token: ${{ secrets.REPO_PA_TOKEN }}
         github-token: ${{ secrets.REPO_ACCESS_TOKEN }}
         repository: kebi-be/riscv-coredsl-extensions
         run-id: ${{ github.event.client_payload.run_id }}
     - uses: actions/checkout@v4
-     with:
+      with:
         fetch-depth: 0
     - name: print trigger details
       run: |
+        echo ${{ github.event.client_playload.github.action }}
+        echo ${{ github.event.client_playload.github.action }}
         sudo apt -qq install -y build-essential git cmake libboost-system-dev libboost-filesystem-dev libboost-program-options-dev
-  #update:
-    # Only run this job if Workflow is triggered by Riscv-CoreDSL-Extensions
-   # if: ${{ github.event_name == 'repository_dispatch' }}
-  
-    # The CMake configure and build commands are platform agnostic and should work equally well on Windows or Mac.
-    # You can convert this to a matrix build if you need cross-platform coverage.
-    # See: https://docs.github.com/en/free-pro-team@latest/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
-   # runs-on: ubuntu-latest
-
- 
-
   build:
     # The CMake configure and build commands are platform agnostic and should work equally well on Windows or Mac.
     # You can convert this to a matrix build if you need cross-platform coverage.
@@ -106,8 +105,6 @@ jobs:
          path: |
             /home/runner/work/etiss/etiss/build/installed/
     needs: update
-   # if: ${{ github.event_name == 'repository_dispatch' }}
-
     
   test:
     # The CMake configure and build commands are platform agnostic and should work equally well on Windows or Mac.
@@ -136,3 +133,4 @@ jobs:
       run: |
         etiss-build-files/bin/bare_etiss_processor -i'pwd'/install/ini/hello_world.ini
     needs: build
+Update build_etiss.yml · kebi-be/etiss_wysiwyng@a14c5a2 
