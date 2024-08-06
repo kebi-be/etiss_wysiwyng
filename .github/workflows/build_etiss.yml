@@ -15,16 +15,16 @@ env:
   BUILD_TYPE: Release
 
 jobs:
-  setup-env:
-    runs-on: ubuntu-latest
-    steps:
-    - name: Setup Build Environment 
-    - uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-    - name: print trigger details
-      run: |
-        sudo apt -qq install -y build-essential git cmake libboost-system-dev libboost-filesystem-dev libboost-program-options-dev
+  #setup-env:
+   # runs-on: ubuntu-latest
+    #steps:
+    #- name: Setup Build Environment 
+    #- uses: actions/checkout@v4
+     # with:
+      #  fetch-depth: 0
+    #- name: print trigger details
+     # run: |
+      #  sudo apt -qq install -y build-essential git cmake libboost-system-dev libboost-filesystem-dev libboost-program-options-dev
 
   update:
     # Only run this job if Workflow is triggered by Riscv-CoreDSL-Extensions
@@ -36,6 +36,13 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+    - name: Setup Build Environment 
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    - name: print trigger details
+      run: |
+        sudo apt -qq install -y build-essential git cmake libboost-system-dev libboost-filesystem-dev libboost-program-options-dev
     - name: Print events
       run: |
         echo " Run_ID:" ${{ github.event.client_playload.run_id }} " Event_Type:" ${{ github.event_type }}
@@ -49,7 +56,7 @@ jobs:
         repository: kebi-be/riscv-coredsl-extensions
         run-id: ${{ github.event.client_payload.run_id }}
         
-    needs: setup-env
+  #  needs: setup-env
 
   build:
     # The CMake configure and build commands are platform agnostic and should work equally well on Windows or Mac.
