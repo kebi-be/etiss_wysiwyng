@@ -88,7 +88,7 @@ jobs:
          path: |
             /home/runner/work/etiss/etiss/build/installed/
     needs: update
-    if: ${{ github.event_name == 'repository_dispatch' }}
+   # if: ${{ github.event_name == 'repository_dispatch' }}
 
     
   test:
