@@ -14,7 +14,7 @@ env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
   BUILD_TYPE: Release
 
-jobs:
+#jobs:
   #setup-env:
    # runs-on: ubuntu-latest
     #steps:
@@ -26,37 +26,50 @@ jobs:
      # run: |
       #  sudo apt -qq install -y build-essential git cmake libboost-system-dev libboost-filesystem-dev libboost-program-options-dev
 
+jobs:
+
   update:
-    # Only run this job if Workflow is triggered by Riscv-CoreDSL-Extensions
-   # if: ${{ github.event_name == 'repository_dispatch' }}
-  
     # The CMake configure and build commands are platform agnostic and should work equally well on Windows or Mac.
     # You can convert this to a matrix build if you need cross-platform coverage.
     # See: https://docs.github.com/en/free-pro-team@latest/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
     runs-on: ubuntu-latest
-
     steps:
-    - name: Setup Build Environment 
-    - uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-    - name: print trigger details
-      run: |
-        sudo apt -qq install -y build-essential git cmake libboost-system-dev libboost-filesystem-dev libboost-program-options-dev
     - name: Print events
       run: |
         echo " Run_ID:" ${{ github.event.client_playload.run_id }} " Event_Type:" ${{ github.event_type }}
         echo ${{ github.event.client_playload.triggered_by }}
     - run: echo ${{ github.event.client_payload.run_id }}  " Repo:"  ${{ github.event.client_payload.triggered_by}} 
-    - name: Download Core-DSL-Extension Artifacts
+    - name: Download Core-DSL-Extension Artifacts 1
       uses: actions/download-artifact@v4
       with:
         name: riscv-core-dsl-files
         github-token: ${{ secrets.REPO_ACCESS_TOKEN }}
         repository: kebi-be/riscv-coredsl-extensions
         run-id: ${{ github.event.client_payload.run_id }}
-        
-  #  needs: setup-env
+    - name: Download Core-DSL-Extension Artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: riscv-core-dsl-files
+        github-token: ${{ secrets.REPO_PA_TOKEN }}
+        github-token: ${{ secrets.REPO_ACCESS_TOKEN }}
+        repository: kebi-be/riscv-coredsl-extensions
+        run-id: ${{ github.event.client_payload.run_id }}
+    - uses: actions/checkout@v4
+     with:
+        fetch-depth: 0
+    - name: print trigger details
+      run: |
+        sudo apt -qq install -y build-essential git cmake libboost-system-dev libboost-filesystem-dev libboost-program-options-dev
+  #update:
+    # Only run this job if Workflow is triggered by Riscv-CoreDSL-Extensions
+   # if: ${{ github.event_name == 'repository_dispatch' }}
+  
+    # The CMake configure and build commands are platform agnostic and should work equally well on Windows or Mac.
+    # You can convert this to a matrix build if you need cross-platform coverage.
+    # See: https://docs.github.com/en/free-pro-team@latest/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
+   # runs-on: ubuntu-latest
+
+ 
 
   build:
     # The CMake configure and build commands are platform agnostic and should work equally well on Windows or Mac.
