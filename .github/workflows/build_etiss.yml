@@ -1,26 +1,3 @@
-Skip to content
-Navigation Menu
-kebi-be
-/
-etiss_wysiwyng
-
-Type / to search
-Code
-Issues
-Pull requests
-Actions
-Projects
-Security
-Insights
-Settings
-Build ETISS
-s4e_cdl_event #20
-Jobs
-Run details
-Workflow file for this run
-.github/workflows/build_etiss.yml at a14c5a2
-# This starter workflow is for a CMake project running on a single platform. There is a different starter workflow if you need cross-platform coverage.
-# See: https://github.com/actions/starter-workflows/blob/main/ci/cmake-multi-platform.yml
 name: Build ETISS
 
 on:
