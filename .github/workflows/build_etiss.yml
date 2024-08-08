@@ -110,4 +110,3 @@ jobs:
       run: |
         etiss-build-files/bin/bare_etiss_processor -i'pwd'/install/ini/hello_world.ini
     needs: build
-Update build_etiss.yml · kebi-be/etiss_wysiwyng@a14c5a2 
