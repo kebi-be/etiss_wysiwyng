@@ -25,13 +25,6 @@ jobs:
         echo " Run_ID:" ${{ github.event.client_playload.run_id }} " Event_Type:" ${{ github.event_type }}
         echo ${{ github.event.client_playload.triggered_by }}
     - run: echo ${{ github.event.client_payload.run_id }}  " Repo:"  ${{ github.event.client_payload.triggered_by}} 
-    - name: Download Core-DSL-Extension Artifacts 1
-      uses: actions/download-artifact@v4
-      with:
-        name: riscv-core-dsl-files
-        github-token: ${{ secrets.REPO_ACCESS_TOKEN }}
-        repository: kebi-be/riscv-coredsl-extensions
-        run-id: ${{ github.event.client_payload.run_id }}
     - name: Download Core-DSL-Extension Artifacts
       uses: actions/download-artifact@v4
       with:
@@ -67,6 +60,13 @@ jobs:
         cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=`pwd`/installed ..
         ls -al
         pwd
+    - name: Download Core-DSL-Extension Artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: riscv-core-dsl-files
+        github-token: ${{ secrets.REPO_ACCESS_TOKEN }}
+        repository: kebi-be/riscv-coredsl-extensions
+        run-id: ${{ github.event.client_payload.run_id }}
     - name: Build
       # Build your program with the given configuration
       run: |
@@ -93,6 +93,10 @@ jobs:
       uses: actions/download-artifact@v4
       with:
         name: etiss-build-files
+        github-token: ${{ secrets.REPO_ACCESS_TOKEN }}
+        repository: ${{ github.repository }}
+        run-id: ${{ github.run_id }}
+        
     - name: Download RISCV-GNU-Toolchain  
       run: |
          wget https://syncandshare.lrz.de/dl/fi2p5Ds5PHktjmZGKzR9tx/GCC/default/2023.09.27/Ubuntu/22.04/rv32imc_ilp32.tar.xz
