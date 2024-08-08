@@ -80,7 +80,7 @@ jobs:
       with:
          name: etiss-build-files
          path: |
-            /home/runner/work/etiss/etiss/build/installed/
+            /home/runner/work/etiss_wysiwyng/etiss_wysiwyng/build/installed
     needs: update
     
   test:
