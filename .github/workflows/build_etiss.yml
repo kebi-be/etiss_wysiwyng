@@ -112,9 +112,19 @@ jobs:
         pwd
         sudo apt -qq install -y build-essential git cmake libboost-system-dev libboost-filesystem-dev libboost-program-options-dev
         git clone https://github.com/tum-ei-eda/etiss_riscv_examples.git
+        RISCV_GCC_PREFIX=$(pwd)/gnu
+        RISCV_GCC_NAME=riscv32-unknown-elf
+        ARCH=rv32imc
+        ETISS_ARCH=RV32IMACFD
+        PROG=hello_world
+        ABI=ilp32
+        RISCV_GCC_NAME=
+        export PATH=$RISCV_GCC_PREFIX/bin/:$PATH
         cd etiss_riscv_examples && mkdir build
         cd build
-        cmake -DCMAKE_TOOLCHAIN_FILE=rv32gc-toolchain.cmake -DRISCV_TOOLCHAIN_PREFIX=/home/runner/work/etiss_wysiwyng/etiss_wysiwyng/gnu -DCMAKE_INSTALL_PREFIX=../install ..
+        #cmake -DCMAKE_TOOLCHAIN_FILE=rv32gc-toolchain.cmake -DRISCV_TOOLCHAIN_PREFIX=/home/runner/work/etiss_wysiwyng/etiss_wysiwyng/gnu -DCMAKE_INSTALL_PREFIX=../install ..
+        cmake -DCMAKE_TOOLCHAIN_FILE=$(pwd)/../rv32gc-llvm-toolchain.cmake -DCMAKE_INSTALL_PREFIX=$(pwd)/install -DRISCV_ARCH=$ARCH -DRISCV_ABI=$ABI -DRISCV_TOOLCHAIN_PREFIX=$RISCV_GCC_PREFIX -DRISCV_TOOLCHAIN_BASENAME=$RISCV_GCC_NAME ..
+        make -j$(nproc) install    
         make install
     - name: Run ETISS Default Configuration Test
       run: |
