@@ -105,6 +105,7 @@ jobs:
     - name: Build ETISS RISCV Examples for Testing
       run: |
         pwd
+        sudo apt -qq install -y build-essential git cmake libboost-system-dev libboost-filesystem-dev libboost-program-options-dev
         git clone https://github.com/tum-ei-eda/etiss_riscv_examples.git
         cd etiss_riscv_examples && mkdir build
         cd build
