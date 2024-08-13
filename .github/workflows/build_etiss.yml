@@ -123,7 +123,7 @@ jobs:
     - name: Build ETISS RISCV Examples for Testing
       run: |
         pwd
-        sudo apt -qq install -y build-essential make git cmake libboost-system-dev libboost-filesystem-dev libboost-program-options-dev
+        sudo apt -qq install -y build-essential make clang git cmake libboost-system-dev libboost-filesystem-dev libboost-program-options-dev
         git clone https://github.com/tum-ei-eda/etiss_riscv_examples.git
         RISCV_GCC_PREFIX=/home/runner/work/etiss_wysiwyng/etiss_wysiwyng/gnu
         RISCV_GCC_NAME=riscv32-unknown-elf
