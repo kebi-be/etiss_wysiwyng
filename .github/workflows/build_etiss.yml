@@ -92,13 +92,13 @@ jobs:
     # See: https://docs.github.com/en/free-pro-team@latest/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
     runs-on: ubuntu-latest
     steps:
-    - name: Download build artifact
-      uses: actions/download-artifact@v4
-      with:
-        name: etiss-build-files
-        github-token: ${{ secrets.REPO_ACCESS_TOKEN }}
-        repository: ${{ github.repository }}
-        run-id: ${{ github.run_id }}
+   # - name: Download build artifact
+    #  uses: actions/download-artifact@v4
+     # with:
+      #  name: etiss-build-files
+       # github-token: ${{ secrets.REPO_ACCESS_TOKEN }}
+       # repository: ${{ github.repository }}
+       # run-id: ${{ github.run_id }}
         
     - name: Download Cached GCC Binaries
       id: cache-gcc
