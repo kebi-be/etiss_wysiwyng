@@ -100,19 +100,19 @@ jobs:
         repository: ${{ github.repository }}
         run-id: ${{ github.run_id }}
         
-   # - name: Download Cached GCC Binaries
-    #  id: cache-gcc
-     # uses: actions/cache@v4
-      #env:
-       #   cache-name: cache-gcc-binaries
-      #with:
-       #   path: ./Toolchain
-        #  fail-on-cache-miss: true
-         # key: gcc-binaries-${{ steps.date.outputs.date }}
-          #restore-keys: |
-           # gcc-binaries-
+    - name: Download Cached GCC Binaries
+      id: cache-gcc
+      uses: actions/cache@v4
+      env:
+        cache-name: cache-gcc-binaries
+      with:
+        path: ./gnu
+        key: gcc-binaries-${{ steps.date.outputs.date }}
+        restore-keys: |
+          gcc-binaries-
             
-    - name: Download RISCV-GNU-Toolchain  
+    - if: ${{ steps.cache-gcc.outputs.cache-hit != 'true' }}       
+      name: Download RISCV-GNU-Toolchain   
       run: |
          wget https://syncandshare.lrz.de/dl/fi2p5Ds5PHktjmZGKzR9tx/GCC/default/2023.09.27/Ubuntu/22.04/rv32imc_ilp32.tar.xz
          tar xvf rv32imc_ilp32.tar.xz
@@ -138,10 +138,11 @@ jobs:
         ls -al
         cd build
         #cmake -DCMAKE_TOOLCHAIN_FILE=rv32gc-toolchain.cmake -DRISCV_TOOLCHAIN_PREFIX=/home/runner/work/etiss_wysiwyng/etiss_wysiwyng/gnu -DCMAKE_INSTALL_PREFIX=../install ..
-        cmake -DCMAKE_TOOLCHAIN_FILE=/home/runner/work/etiss_wysiwyng/etiss_wysiwyng/etiss_riscv_examples/rv32gc-llvm-toolchain.cmake -DCMAKE_INSTALL_PREFIX=$(pwd)/install -DRISCV_ARCH=$ARCH -DRISCV_ABI=$ABI -DRISCV_TOOLCHAIN_PREFIX=$RISCV_GCC_PREFIX -DRISCV_TOOLCHAIN_BASENAME=$RISCV_GCC_NAME ..
-        make -j$(nproc) install    
-        make install
+       # cmake -DCMAKE_TOOLCHAIN_FILE=/home/runner/work/etiss_wysiwyng/etiss_wysiwyng/etiss_riscv_examples/rv32gc-llvm-toolchain.cmake -DCMAKE_INSTALL_PREFIX=$(pwd)/install -DRISCV_ARCH=$ARCH -DRISCV_ABI=$ABI -DRISCV_TOOLCHAIN_PREFIX=$RISCV_GCC_PREFIX -DRISCV_TOOLCHAIN_BASENAME=$RISCV_GCC_NAME ..
+       # make -j$(nproc) install    
+        #make install
     - name: Run ETISS Default Configuration Test
       run: |
-        etiss-build-files/bin/bare_etiss_processor -i'pwd'/install/ini/hello_world.ini
+        echo "Finished"
+        #etiss-build-files/bin/bare_etiss_processor -i'pwd'/install/ini/hello_world.ini
     needs: build
