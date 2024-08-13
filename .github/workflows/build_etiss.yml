@@ -100,6 +100,18 @@ jobs:
         repository: ${{ github.repository }}
         run-id: ${{ github.run_id }}
         
+    - name: Download Cached GCC Binaries
+      id: cache-gcc
+      uses: actions/cache@v4
+      env:
+          cache-name: cache-gcc-binaries
+      with:
+          path: ./Toolchain
+          fail-on-cache-miss: true
+          key: gcc-binaries-${{ steps.date.outputs.date }}
+          restore-keys: |
+            gcc-binaries-
+            
     - name: Download RISCV-GNU-Toolchain  
       run: |
          wget https://syncandshare.lrz.de/dl/fi2p5Ds5PHktjmZGKzR9tx/GCC/default/2023.09.27/Ubuntu/22.04/rv32imc_ilp32.tar.xz
@@ -107,10 +119,12 @@ jobs:
          rm rv32imc_ilp32.tar.xz
          ls -al
          pwd
+    
     - name: Build ETISS RISCV Examples for Testing
       run: |
         pwd
-        sudo apt -qq install -y build-essential git cmake libboost-system-dev libboost-filesystem-dev libboost-program-options-dev
+        sudo apt -qq install -y build-essential make git cmake libboost-system-dev libboost-filesystem-dev libboost-program-options-dev
+        sudo pacman -S base-devel
         git clone https://github.com/tum-ei-eda/etiss_riscv_examples.git
         RISCV_GCC_PREFIX=/home/runner/work/etiss_wysiwyng/etiss_wysiwyng/gnu
         RISCV_GCC_NAME=riscv32-unknown-elf
