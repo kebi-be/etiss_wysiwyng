@@ -132,6 +132,7 @@ jobs:
         PROG=hello_world
         ABI=ilp32
         export PATH=$RISCV_GCC_PREFIX/bin/:$PATH
+        echo $PATH
         cd etiss_riscv_examples 
         pwd
         ls -al
