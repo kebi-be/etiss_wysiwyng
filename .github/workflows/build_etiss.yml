@@ -133,9 +133,10 @@ jobs:
         ABI=ilp32
         export PATH=$RISCV_GCC_PREFIX/bin/:$PATH
         echo $PATH
-        cd etiss_riscv_examples 
         pwd
         ls -al
+        ls -al gnu
+        cd etiss_riscv_examples         
         mkdir build && cd build
         make --version
         sudo apt-get install make
