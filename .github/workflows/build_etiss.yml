@@ -124,7 +124,7 @@ jobs:
       run: |
         pwd
         sudo apt -qq install -y build-essential make clang g++ git cmake libboost-system-dev libboost-filesystem-dev libboost-program-options-dev
-        git clone https://github.com/tum-ei-eda/etiss_riscv_examples.git -b philipvk
+        git clone https://github.com/tum-ei-eda/etiss_riscv_examples.git --branch philippvk --recursive
         RISCV_GCC_PREFIX=/home/runner/work/etiss_wysiwyng/etiss_wysiwyng/gnu
         RISCV_GCC_NAME=riscv32-unknown-elf
         ARCH=rv32imc
