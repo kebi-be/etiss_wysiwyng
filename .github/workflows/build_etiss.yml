@@ -44,8 +44,9 @@ jobs:
 
     - name: Run M2-ISA-R
       run: |
-        pwd
-        python -m m2isar.frontends.coredsl2.parser riscv-core-dsl-files/s4e-mac.core_desc
+        ls -al
+        cd M2-ISA-R
+        python -m m2isar.frontends.coredsl2.parser ../riscv-core-dsl-files/s4e-mac.core_desc
         python -m m2isar.backends.etiss.writer $pwd/gen_model/etiss-s4e-mac.m2isarmodel --separate --static-scalars
       
     - name: Upload M2ISAR Model artifacts
