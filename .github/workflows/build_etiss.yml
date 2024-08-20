@@ -178,4 +178,4 @@ jobs:
       run: |
         echo "Finished"
         #etiss-build-files/bin/bare_etiss_processor -i'pwd'/install/ini/hello_world.ini
-    needs: build
+    needs: build-etiss
