@@ -9,22 +9,51 @@ on:
  #   branches: [ "master" ]
 
 env:
-  # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
   BUILD_TYPE: Release
 
 jobs:
-  update:
-    # The CMake configure and build commands are platform agnostic and should work equally well on Windows or Mac.
-    # You can convert this to a matrix build if you need cross-platform coverage.
-    # See: https://docs.github.com/en/free-pro-team@latest/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
-    runs-on: ubuntu-latest
-
+  setup-run-M2ISAR:
+    runs-on: ubuntu-22.04
+    
     steps:
-    - name: Print events
+    - uses: actions/checkout@v4
+      with:
+        path: etiss_source
+        
+    - name: Download Core-DSL-Extension Artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: riscv-core-dsl-files
+        github-token: ${{ secrets.REPO_ACCESS_TOKEN }}
+        repository: kebi-be/riscv-coredsl-extensions
+        run-id: ${{ github.event.client_payload.run_id }} 
+    
+    - name: Setup M2-ISA-R
       run: |
-        echo " Run_ID:" ${{ github.event.client_playload.run_id }} " Event_Type:" ${{ github.event_type }}
-        echo ${{ github.event.client_playload.triggered_by }}
-    - run: echo ${{ github.event.client_payload.run_id }}  " Repo:"  ${{ github.event.client_payload.triggered_by}} 
+       git clone git@github.com:tum-ei-eda/etiss_arch_riscv.git --recursive --branch coredsl_exceptions
+       git clone git@github.com:tum-ei-eda/M2-ISA-R.git --branch coredsl2
+       cd M2-ISA-R
+       virtualenv -p python3.8 venv  #Alternative (requires `apt install python3-venv`): python3 -m venv venv
+       source venv/bin/activate
+       pip install -e .
+       cd -
+
+    - name: Run M2-ISA-R
+      run: |
+        python -m m2isar.frontends.coredsl2.parser riscv-core-dsl-files/s4e-mac.core_desc
+        python -m m2isar.backends.etiss.writer $pwd/gen_model/etiss-s4e-mac.m2isarmodel --separate --static-scalars
+      
+    - name: Upload M2ISAR Model artifacts
+      uses: actions/upload-artifact@v4
+      with:
+         name: m2isar-model-files
+         path: |
+            $pwd/gen_model
+            
+  patch-etiss-arch:
+    runs-on: ubuntu-22.04
+    needs: [setup-run-M2ISAR]
+    steps:
     - name: Download Core-DSL-Extension Artifacts
       uses: actions/download-artifact@v4
       with:
@@ -32,59 +61,56 @@ jobs:
         github-token: ${{ secrets.REPO_ACCESS_TOKEN }}
         repository: kebi-be/riscv-coredsl-extensions
         run-id: ${{ github.event.client_payload.run_id }}
-    - uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-    - name: print trigger details
-      run: |
+    
+    - run: |
+       cp -r extensible-compiler/RISCV-CoreDSL-Extensions/gen_output/etiss-s4e-mac/* etiss/ArchImpl/
+       cd etiss
+       cp ArchImpl/RV32IMACFD/RV32IMACFDArchSpecificImp.cpp ArchImpl/RV32IMCXS4EMAC/RV32IMCXS4EMACArchSpecificImp.cpp
+       sed -i "s/RV32IMACFD/RV32IMCXS4EMAC/g" ArchImpl/RV32IMCXS4EMAC/RV32IMCXS4EMACArchSpecificImp.cpp
+       cd -
+
+       cd etiss
+       git add --all
+       git commit -m 'update etiss architectures'
+       cd -
+
+       - name: print trigger details
+       run: |
         echo ${{ github.event.client_playload.github.action }}
         echo ${{ github.event.client_playload.github.action }}
         sudo apt -qq install -y build-essential git cmake libboost-system-dev libboost-filesystem-dev libboost-program-options-dev
  
-  build:
-    # The CMake configure and build commands are platform agnostic and should work equally well on Windows or Mac.
-    # You can convert this to a matrix build if you need cross-platform coverage.
-    # See: https://docs.github.com/en/free-pro-team@latest/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
-    runs-on: ubuntu-latest
+  build-etiss:
+    runs-on: ubuntu-22.04
     steps:
-    - run: |
-        pwd
     - uses: actions/checkout@v4
-    - name: Configure CMake
-      # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
-      # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
+    
+    - name: Install Build Dependencies
       run: |
-        pwd
-        echo " running Cmake" # cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}      
-        sudo apt -qq install -y build-essential git cmake libboost-system-dev libboost-filesystem-dev libboost-program-options-dev
-        mkdir build
-        echo "Running build" #cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} 
-        cd build
-        cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=`pwd`/installed ..
-        ls -al
-        pwd
-    - name: Download Core-DSL-Extension Artifacts
-      uses: actions/download-artifact@v4
-      with:
-        name: riscv-core-dsl-files
-        github-token: ${{ secrets.REPO_ACCESS_TOKEN }}
-        repository: kebi-be/riscv-coredsl-extensions
-        run-id: ${{ github.event.client_payload.run_id }}
-    - name: Build
-      # Build your program with the given configuration
+        sudo apt-get update
+        sudo apt-get install -y libboost-filesystem-dev libboost-program-options-dev \
+          llvm-11-dev libclang-11-dev clang-11
+
+    - name: CMake config
       run: |
-        cd build
-        ls -al
-        #make -j$(nproc)
-        #make install 
-          
-    - name: Archive build artifacts
+        cmake -B etiss_build -S etiss_source -DCMAKE_INSTALL_PREFIX=etiss_prebuilt -DCMAKE_BUILD_TYPE=$BUILD_TYPE
+        
+    - name: CMake build
+      run: |
+        cmake --build etiss_build -j$(nproc)
+        
+    - name: CMake install
+      run: |
+        cmake --build etiss_build --target install
+        
+    - name: Upload compiled ETISS
       uses: actions/upload-artifact@v4
       with:
-         name: etiss-build-files
-         path: |
-            /home/runner/work/etiss_wysiwyng/etiss_wysiwyng/build/installed
-    needs: update
+        name: etiss_prebuilt
+        path: etiss_prebuilt
+        
+     
+
     
   test:
     # The CMake configure and build commands are platform agnostic and should work equally well on Windows or Mac.
