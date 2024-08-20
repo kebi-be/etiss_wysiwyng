@@ -41,10 +41,10 @@ jobs:
        virtualenv -p python3.10 venv  #Alternative (requires `apt install python3-venv`): python3 -m venv venv
        source venv/bin/activate
        pip install -e .
-       cd -
 
     - name: Run M2-ISA-R
       run: |
+        pwd
         python -m m2isar.frontends.coredsl2.parser riscv-core-dsl-files/s4e-mac.core_desc
         python -m m2isar.backends.etiss.writer $pwd/gen_model/etiss-s4e-mac.m2isarmodel --separate --static-scalars
       
