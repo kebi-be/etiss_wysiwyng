@@ -38,7 +38,7 @@ jobs:
        git clone https://github.com/tum-ei-eda/etiss_arch_riscv.git --recursive --branch coredsl_exceptions
        git clone https://github.com/tum-ei-eda/M2-ISA-R.git --branch coredsl2
        cd M2-ISA-R
-       virtualenv -p python3.8 venv  #Alternative (requires `apt install python3-venv`): python3 -m venv venv
+       virtualenv -p python3.10 venv  #Alternative (requires `apt install python3-venv`): python3 -m venv venv
        source venv/bin/activate
        pip install -e .
        cd -
