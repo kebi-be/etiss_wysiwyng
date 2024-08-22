@@ -37,18 +37,18 @@ jobs:
        virtualenv -p python3.10 venv  #Alternative (requires `apt install python3-venv`): python3 -m venv venv
        source venv/bin/activate
        pip install -e .
-       ls -al ../riscv-coredsl-extensions
-       ls -al ../riscv-coredsl-extensions/CoreDSL-Instruction-Set-Description
-       python -m m2isar.frontends.coredsl2.parser ../riscv-coredsl-extensions/etiss-s4e-mac.core_desc
-       python -m m2isar.backends.etiss.writer ../riscv-coredsl-extensions/gen_model/etiss-s4e-mac.m2isarmodel --separate --static-scalars
+       ls -al ../riscv-coredsl-extensions-1
+       ls -al ../riscv-coredsl-extensions-1/CoreDSL-Instruction-Set-Description
+       python -m m2isar.frontends.coredsl2.parser ../riscv-coredsl-extensions-1/etiss-s4e-mac.core_desc
+       python -m m2isar.backends.etiss.writer ../riscv-coredsl-extensions-1/gen_model/etiss-s4e-mac.m2isarmodel --separate --static-scalars
 
     - name: Run M2-ISA-R
       run: |
         ls -al
         cd M2-ISA-R
         ls -al
-      #  python -m m2isar.frontends.coredsl2.parser ../riscv-coredsl-extensions/s4e-mac.core_desc
-       # python -m m2isar.backends.etiss.writer ../riscv-coredsl-extensions/gen_model/etiss-s4e-mac.m2isarmodel --separate --static-scalars
+      #  python -m m2isar.frontends.coredsl2.parser ../riscv-coredsl-extensions-1/s4e-mac.core_desc
+       # python -m m2isar.backends.etiss.writer ../riscv-coredsl-extensions-1/gen_model/etiss-s4e-mac.m2isarmodel --separate --static-scalars
       
     - name: Upload M2ISAR Model artifacts
       uses: actions/upload-artifact@v4
@@ -66,7 +66,7 @@ jobs:
         path: etiss_source
     - run: |
        pwd
-       cp -r riscv-coredsl-extensions/gen_output/etiss-s4e-mac/* etiss_source/ArchImpl/
+       cp -r riscv-coredsl-extensions-1/gen_output/etiss-s4e-mac/* etiss_source/ArchImpl/
        cd etiss_source
        cp ArchImpl/RV32IMACFD/RV32IMACFDArchSpecificImp.cpp ArchImpl/RV32IMCXS4EMAC/RV32IMCXS4EMACArchSpecificImp.cpp
        sed -i "s/RV32IMACFD/RV32IMCXS4EMAC/g" ArchImpl/RV32IMCXS4EMAC/RV32IMCXS4EMACArchSpecificImp.cpp
