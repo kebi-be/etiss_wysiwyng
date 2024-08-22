@@ -23,6 +23,7 @@ jobs:
     
     - name: Setup M2-ISA-R
       run: |
+       pwd
        git clone https://github.com/PhilippvK/riscv-coredsl-extensions.git --branch etiss 
        cd riscv-coredsl-extensions
        git clone https://github.com/Minres/RISCV_ISA_CoreDSL.git
