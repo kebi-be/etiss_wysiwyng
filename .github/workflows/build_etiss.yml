@@ -46,7 +46,8 @@ jobs:
 
     - name: Run M2-ISA-R
       run: |
-        ls -al ../riscv-coredsl-extensions-1
+        pwd
+        ls -al 
         cd M2-ISA-R
         ls -al
       #  python -m m2isar.frontends.coredsl2.parser ../riscv-coredsl-extensions-1/s4e-mac.core_desc
