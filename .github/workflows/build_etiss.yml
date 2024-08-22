@@ -16,18 +16,6 @@ jobs:
     runs-on: ubuntu-22.04
     
     steps:
-    - uses: actions/checkout@v4
-      with:
-        path: etiss_source
-        
-    - name: Download Core-DSL-Extension Artifacts
-      uses: actions/download-artifact@v4
-      with:
-        name: riscv-core-dsl-files
-        github-token: ${{ secrets.REPO_ACCESS_TOKEN }}
-        repository: kebi-be/riscv-coredsl-extensions
-        run-id: ${{ github.event.client_payload.run_id }} 
-
     - name: Install dependencies
       run: |
         sudo apt-get update
@@ -35,6 +23,7 @@ jobs:
     
     - name: Setup M2-ISA-R
       run: |
+       git clone https://github.com/PhilippvK/riscv-coredsl-extensions.git --branch etiss
        git clone https://github.com/tum-ei-eda/etiss_arch_riscv.git --recursive --branch coredsl_exceptions
        git clone https://github.com/tum-ei-eda/M2-ISA-R.git --branch coredsl2
        cd M2-ISA-R
@@ -47,58 +36,58 @@ jobs:
         ls -al
         cd M2-ISA-R
         ls -al
-        python -m m2isar.frontends.coredsl2.parser ../s4e-mac.core_desc
-        python -m m2isar.backends.etiss.writer $pwd/gen_model/etiss-s4e-mac.m2isarmodel --separate --static-scalars
+        python -m m2isar.frontends.coredsl2.parser ../riscv-coredsl-extensions/s4e-mac.core_desc
+        python -m m2isar.backends.etiss.writer ../riscv-coredsl-extensions/gen_model/etiss-s4e-mac.m2isarmodel --separate --static-scalars
       
     - name: Upload M2ISAR Model artifacts
       uses: actions/upload-artifact@v4
       with:
          name: m2isar-model-files
          path: |
-            $pwd/gen_model
+            $pwd/riscv-coredsl-extensions/gen_output
             
   patch-etiss-arch:
     runs-on: ubuntu-22.04
     needs: [setup-run-M2ISAR]
-    steps:
-    - name: Download Core-DSL-Extension Artifacts
-      uses: actions/download-artifact@v4
+    steps:   
+    - uses: actions/checkout@v4
       with:
-        name: riscv-core-dsl-files
-        github-token: ${{ secrets.REPO_ACCESS_TOKEN }}
-        repository: kebi-be/riscv-coredsl-extensions
-        run-id: ${{ github.event.client_payload.run_id }}
-    
+        path: etiss_source
     - run: |
-       cp -r extensible-compiler/RISCV-CoreDSL-Extensions/gen_output/etiss-s4e-mac/* etiss/ArchImpl/
-       cd etiss
+       pwd
+       cp -r riscv-coredsl-extensions/gen_output/etiss-s4e-mac/* etiss_source/ArchImpl/
+       cd etiss_source
        cp ArchImpl/RV32IMACFD/RV32IMACFDArchSpecificImp.cpp ArchImpl/RV32IMCXS4EMAC/RV32IMCXS4EMACArchSpecificImp.cpp
        sed -i "s/RV32IMACFD/RV32IMCXS4EMAC/g" ArchImpl/RV32IMCXS4EMAC/RV32IMCXS4EMACArchSpecificImp.cpp
-       cd -
-
-       cd etiss
        git add --all
        git commit -m 'update etiss architectures'
-       cd -
+       
+    - name: Upload M2ISAR Model artifacts
+      uses: actions/upload-artifact@v4
+      with:
+         name: patched_etiss
+         path: |
+            $pwd/etiss_source/
 
-       - name: print trigger details
-       run: |
-        echo ${{ github.event.client_playload.github.action }}
-        echo ${{ github.event.client_playload.github.action }}
-        sudo apt -qq install -y build-essential git cmake libboost-system-dev libboost-filesystem-dev libboost-program-options-dev
- 
+
+            
   build-etiss:
     runs-on: ubuntu-22.04
     needs: [patch-etiss-arch]
     steps:
-    - uses: actions/checkout@v4
-    
+   #- uses: actions/checkout@v4    
     - name: Install Build Dependencies
       run: |
         sudo apt-get update
         sudo apt-get install -y libboost-filesystem-dev libboost-program-options-dev \
           llvm-11-dev libclang-11-dev clang-11
 
+    - name: Download Patched Etiss
+      uses: actions/download-artifact@v4
+      with:
+        name: patched_etiss
+        github-token: ${{ secrets.REPO_ACCESS_TOKEN }}
+      
     - name: CMake config
       run: |
         cmake -B etiss_build -S etiss_source -DCMAKE_INSTALL_PREFIX=etiss_prebuilt -DCMAKE_BUILD_TYPE=$BUILD_TYPE
@@ -115,9 +104,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: etiss_prebuilt
-        path: etiss_prebuilt
-        
-     
+        path: etiss_prebuilt   
 
     
   test:
@@ -126,13 +113,13 @@ jobs:
     # See: https://docs.github.com/en/free-pro-team@latest/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
     runs-on: ubuntu-latest
     steps:
-   # - name: Download build artifact
-    #  uses: actions/download-artifact@v4
-     # with:
-      #  name: etiss-build-files
-       # github-token: ${{ secrets.REPO_ACCESS_TOKEN }}
-       # repository: ${{ github.repository }}
-       # run-id: ${{ github.run_id }}
+    - name: Download build artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: etiss-prebuilt
+        github-token: ${{ secrets.REPO_ACCESS_TOKEN }}
+      #  repository: ${{ github.repository }}
+      #  run-id: ${{ github.run_id }}
         
     - name: Download Cached GCC Binaries
       id: cache-gcc
@@ -158,7 +145,7 @@ jobs:
       run: |
         pwd
         sudo apt -qq install -y build-essential make clang g++ git cmake libboost-system-dev libboost-filesystem-dev libboost-program-options-dev
-        git clone https://github.com/tum-ei-eda/etiss_riscv_examples.git --branch philippvk --recursive
+        git clone https://github.com/tum-ei-eda/etiss_riscv_examples.git --branch s4emac --recursive
         RISCV_GCC_PREFIX=/home/runner/work/etiss_wysiwyng/etiss_wysiwyng/gnu
         RISCV_GCC_NAME=riscv32-unknown-elf
         ARCH=rv32imc
