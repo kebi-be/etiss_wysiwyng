@@ -42,11 +42,11 @@ jobs:
        python -m m2isar.frontends.coredsl2.parser ../riscv-coredsl-extensions-1/etiss-s4e-mac.core_desc
        python -m m2isar.backends.etiss.writer ../riscv-coredsl-extensions-1/gen_model/etiss-s4e-mac.m2isarmodel --separate --static-scalars
        pwd
-       ls -al ../riscv-coredsl-extensions-1
+       ls -al ../riscv-coredsl-extensions-1/gen_output
 
     - name: Run M2-ISA-R
       run: |
-        ls -al
+        ls -al ../riscv-coredsl-extensions-1
         cd M2-ISA-R
         ls -al
       #  python -m m2isar.frontends.coredsl2.parser ../riscv-coredsl-extensions-1/s4e-mac.core_desc
@@ -57,7 +57,7 @@ jobs:
       with:
          name: m2isar-model-files
          path: |
-            $pwd/riscv-coredsl-extensions-1/gen_output
+           riscv-coredsl-extensions-1/gen_output
             
   patch-etiss-arch:
     runs-on: ubuntu-22.04
