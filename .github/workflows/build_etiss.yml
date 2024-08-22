@@ -24,7 +24,7 @@ jobs:
     - name: Setup M2-ISA-R
       run: |
        pwd
-       git clone https://github.com/kebi-be/riscv-coredsl-extensions-1.git --recursive
+       git clone https://github.com/kebi-be/riscv-coredsl-extensions-1.git --branch etiss --recursive
        #cd riscv-coredsl-extensions
        #git clone https://github.com/Minres/RISCV_ISA_CoreDSL.git 
        #cd RISCV_ISA_CoreDSL && git checkout 5ebcf700dae380a6c5dfc4ccb6ebe6c827ee2036
