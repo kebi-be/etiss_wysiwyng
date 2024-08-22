@@ -37,7 +37,7 @@ jobs:
        pip install -e .
        ls -al ../riscv-coredsl-extensions
        ls -al ../riscv-coredsl-extensions/CoreDSL-Instruction-Set-Description
-       python -m m2isar.frontends.coredsl2.parser ../riscv-coredsl-extensions/s4e-mac.core_desc
+       python -m m2isar.frontends.coredsl2.parser ../riscv-coredsl-extensions/etiss-s4e-mac.core_desc
        python -m m2isar.backends.etiss.writer ../riscv-coredsl-extensions/gen_model/etiss-s4e-mac.m2isarmodel --separate --static-scalars
 
     - name: Run M2-ISA-R
