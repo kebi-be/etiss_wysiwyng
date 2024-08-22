@@ -55,12 +55,24 @@ jobs:
       with:
          name: m2isar-model-files
          path: |
-            $pwd/riscv-coredsl-extensions/gen_output
+            $pwd/riscv-coredsl-extensions-1/gen_output
             
   patch-etiss-arch:
     runs-on: ubuntu-22.04
     needs: [setup-run-M2ISAR]
     steps:   
+    - run: |
+        pwd
+    - name: Download Patched Etiss
+      uses: actions/download-artifact@v4
+      with:
+        name: m2isar-model-files
+        github-token: ${{ secrets.REPO_ACCESS_TOKEN }}
+
+    - run: |
+        pwd
+        ls -al
+        
     - uses: actions/checkout@v4
       with:
         path: etiss_source
