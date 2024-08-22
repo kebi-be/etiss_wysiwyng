@@ -26,6 +26,7 @@ jobs:
        git clone https://github.com/PhilippvK/riscv-coredsl-extensions.git --branch etiss 
        cd riscv-coredsl-extensions
        git clone https://github.com/Minres/RISCV_ISA_CoreDSL.git
+       mv RISCV_ISA_CoreDSL CoreDSL-Instruction-Set-Description
        cd ..
        git clone https://github.com/tum-ei-eda/etiss_arch_riscv.git --recursive --branch coredsl_exceptions
        git clone https://github.com/tum-ei-eda/M2-ISA-R.git --branch coredsl2
