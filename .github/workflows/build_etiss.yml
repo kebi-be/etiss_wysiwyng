@@ -23,7 +23,7 @@ jobs:
     
     - name: Setup M2-ISA-R
       run: |
-       git clone https://github.com/PhilippvK/riscv-coredsl-extensions.git --branch etiss
+       git clone https://github.com/PhilippvK/riscv-coredsl-extensions.git --branch etiss --recursive
        git clone https://github.com/tum-ei-eda/etiss_arch_riscv.git --recursive --branch coredsl_exceptions
        git clone https://github.com/tum-ei-eda/M2-ISA-R.git --branch coredsl2
        cd M2-ISA-R
