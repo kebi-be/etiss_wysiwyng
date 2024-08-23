@@ -23,26 +23,15 @@ jobs:
     
     - name: Setup M2-ISA-R
       run: |
-       pwd
        git clone https://github.com/kebi-be/riscv-coredsl-extensions-1.git --branch etiss --recursive
-       #cd riscv-coredsl-extensions
-       #git clone https://github.com/Minres/RISCV_ISA_CoreDSL.git 
-       #cd RISCV_ISA_CoreDSL && git checkout 5ebcf700dae380a6c5dfc4ccb6ebe6c827ee2036
-       #cd ..
-       #mv  RISCV_ISA_CoreDSL/* CoreDSL-Instruction-Set-Description
-       #cd ..
        git clone https://github.com/tum-ei-eda/etiss_arch_riscv.git --recursive --branch coredsl_exceptions
        git clone https://github.com/tum-ei-eda/M2-ISA-R.git --branch coredsl2
        cd M2-ISA-R
        virtualenv -p python3.10 venv  #Alternative (requires `apt install python3-venv`): python3 -m venv venv
        source venv/bin/activate
        pip install -e .
-       ls -al ../riscv-coredsl-extensions-1
-       ls -al ../riscv-coredsl-extensions-1/CoreDSL-Instruction-Set-Description
        python -m m2isar.frontends.coredsl2.parser ../riscv-coredsl-extensions-1/etiss-s4e-mac.core_desc
        python -m m2isar.backends.etiss.writer ../riscv-coredsl-extensions-1/gen_model/etiss-s4e-mac.m2isarmodel --separate --static-scalars
-       pwd
-       ls -al ../riscv-coredsl-extensions-1/gen_output
 
     - name: Run M2-ISA-R
       run: |
@@ -50,9 +39,9 @@ jobs:
         ls -al 
         cd M2-ISA-R
         ls -al
-      #  python -m m2isar.frontends.coredsl2.parser ../riscv-coredsl-extensions-1/s4e-mac.core_desc
-       # python -m m2isar.backends.etiss.writer ../riscv-coredsl-extensions-1/gen_model/etiss-s4e-mac.m2isarmodel --separate --static-scalars
-      
+        python -m m2isar.frontends.coredsl2.parser ../riscv-coredsl-extensions-1/etiss-s4e-mac.core_desc
+        python -m m2isar.backends.etiss.writer ../riscv-coredsl-extensions-1/gen_model/etiss-s4e-mac.m2isarmodel --separate --static-scalars
+       
     - name: Upload M2ISAR Model artifacts
       uses: actions/upload-artifact@v4
       with:
@@ -79,6 +68,8 @@ jobs:
     - uses: actions/checkout@v4
       with:
         path: etiss_source
+        ref: coverage
+        
     - run: |
        pwd
        cp -r etiss-s4e-mac/* etiss_source/ArchImpl/
@@ -101,7 +92,6 @@ jobs:
     runs-on: ubuntu-22.04
     needs: [patch-etiss-arch]
     steps:
-   #- uses: actions/checkout@v4    
     - name: Install Build Dependencies
       run: |
         sudo apt-get update
