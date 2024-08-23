@@ -30,8 +30,8 @@ jobs:
        virtualenv -p python3.10 venv  #Alternative (requires `apt install python3-venv`): python3 -m venv venv
        source venv/bin/activate
        pip install -e .
-       python -m m2isar.frontends.coredsl2.parser ../riscv-coredsl-extensions-1/etiss-s4e-mac.core_desc
-       python -m m2isar.backends.etiss.writer ../riscv-coredsl-extensions-1/gen_model/etiss-s4e-mac.m2isarmodel --separate --static-scalars
+       #python -m m2isar.frontends.coredsl2.parser ../riscv-coredsl-extensions-1/etiss-s4e-mac.core_desc
+       #python -m m2isar.backends.etiss.writer ../riscv-coredsl-extensions-1/gen_model/etiss-s4e-mac.m2isarmodel --separate --static-scalars
 
     - name: Run M2-ISA-R
       run: |
@@ -39,8 +39,8 @@ jobs:
         ls -al 
         cd M2-ISA-R
         ls -al
-        #python -m m2isar.frontends.coredsl2.parser ../riscv-coredsl-extensions-1/etiss-s4e-mac.core_desc
-        #python -m m2isar.backends.etiss.writer ../riscv-coredsl-extensions-1/gen_model/etiss-s4e-mac.m2isarmodel --separate --static-scalars
+        python -m m2isar.frontends.coredsl2.parser ../riscv-coredsl-extensions-1/etiss-s4e-mac.core_desc
+        python -m m2isar.backends.etiss.writer ../riscv-coredsl-extensions-1/gen_model/etiss-s4e-mac.m2isarmodel --separate --static-scalars
        
     - name: Upload M2ISAR Model artifacts
       uses: actions/upload-artifact@v4
@@ -107,9 +107,6 @@ jobs:
       
     - name: CMake config
       run: |
-        pwd
-        ls -al
-        #mv patched_etiss etiss_source
         cmake -B etiss_build -S etiss_source -DCMAKE_INSTALL_PREFIX=etiss_prebuilt -DCMAKE_BUILD_TYPE=$BUILD_TYPE
         
     - name: CMake build
@@ -128,18 +125,14 @@ jobs:
 
     
   test:
-    # The CMake configure and build commands are platform agnostic and should work equally well on Windows or Mac.
-    # You can convert this to a matrix build if you need cross-platform coverage.
-    # See: https://docs.github.com/en/free-pro-team@latest/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
     runs-on: ubuntu-latest
     steps:
     - name: Download build artifact
       uses: actions/download-artifact@v4
       with:
-        name: etiss-prebuilt
+        name: etiss_prebuilt
         github-token: ${{ secrets.REPO_ACCESS_TOKEN }}
-      #  repository: ${{ github.repository }}
-      #  run-id: ${{ github.run_id }}
+        path: etiss_prebuilt
         
     - name: Download Cached GCC Binaries
       id: cache-gcc
@@ -192,5 +185,5 @@ jobs:
     - name: Run ETISS Default Configuration Test
       run: |
         echo "Finished"
-        #etiss-build-files/bin/bare_etiss_processor -i'pwd'/install/ini/hello_world.ini
+        #etiss_prebuilt/bin/bare_etiss_processor -i'pwd'/install/ini/hello_world.ini
     needs: build-etiss
