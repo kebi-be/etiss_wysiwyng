@@ -95,7 +95,7 @@ jobs:
       with:
          name: patched_etiss
          path: |
-           etiss_source/
+           etiss_source
 
 
             
@@ -118,6 +118,7 @@ jobs:
       
     - name: CMake config
       run: |
+        mv patched_etiss etiss_source
         cmake -B etiss_build -S etiss_source -DCMAKE_INSTALL_PREFIX=etiss_prebuilt -DCMAKE_BUILD_TYPE=$BUILD_TYPE
         
     - name: CMake build
