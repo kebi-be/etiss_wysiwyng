@@ -81,7 +81,7 @@ jobs:
         path: etiss_source
     - run: |
        pwd
-       cp -r riscv-coredsl-extensions-1/gen_output/etiss-s4e-mac/* etiss_source/ArchImpl/
+       cp -r etiss-s4e-mac/* etiss_source/ArchImpl/
        cd etiss_source
        cp ArchImpl/RV32IMACFD/RV32IMACFDArchSpecificImp.cpp ArchImpl/RV32IMCXS4EMAC/RV32IMCXS4EMACArchSpecificImp.cpp
        sed -i "s/RV32IMACFD/RV32IMCXS4EMAC/g" ArchImpl/RV32IMCXS4EMAC/RV32IMCXS4EMACArchSpecificImp.cpp
@@ -93,7 +93,7 @@ jobs:
       with:
          name: patched_etiss
          path: |
-            $pwd/etiss_source/
+           etiss_source/
 
 
             
