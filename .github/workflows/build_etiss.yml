@@ -96,9 +96,7 @@ jobs:
          name: patched_etiss
          path: |
            etiss_source
-
-
-            
+           
   build-etiss:
     runs-on: ubuntu-22.04
     needs: [patch-etiss-arch]
@@ -118,6 +116,7 @@ jobs:
       
     - name: CMake config
       run: |
+        pwd
         ls -al
         mv patched_etiss etiss_source
         cmake -B etiss_build -S etiss_source -DCMAKE_INSTALL_PREFIX=etiss_prebuilt -DCMAKE_BUILD_TYPE=$BUILD_TYPE
