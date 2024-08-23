@@ -85,6 +85,8 @@ jobs:
        cd etiss_source
        cp ArchImpl/RV32IMACFD/RV32IMACFDArchSpecificImp.cpp ArchImpl/RV32IMCXS4EMAC/RV32IMCXS4EMACArchSpecificImp.cpp
        sed -i "s/RV32IMACFD/RV32IMCXS4EMAC/g" ArchImpl/RV32IMCXS4EMAC/RV32IMCXS4EMACArchSpecificImp.cpp
+       git config --global user.email "bewoayia.kebianyor@dlr.de"
+       git config --global user.name "Bewoayia Kebianyor"
        git add --all
        git commit -m 'update etiss architectures'
        
