@@ -118,6 +118,7 @@ jobs:
       
     - name: CMake config
       run: |
+        ls -al
         mv patched_etiss etiss_source
         cmake -B etiss_build -S etiss_source -DCMAKE_INSTALL_PREFIX=etiss_prebuilt -DCMAKE_BUILD_TYPE=$BUILD_TYPE
         
