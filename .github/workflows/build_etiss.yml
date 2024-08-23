@@ -113,12 +113,13 @@ jobs:
       with:
         name: patched_etiss
         github-token: ${{ secrets.REPO_ACCESS_TOKEN }}
+        path: etiss_source
       
     - name: CMake config
       run: |
         pwd
         ls -al
-        mv patched_etiss etiss_source
+        #mv patched_etiss etiss_source
         cmake -B etiss_build -S etiss_source -DCMAKE_INSTALL_PREFIX=etiss_prebuilt -DCMAKE_BUILD_TYPE=$BUILD_TYPE
         
     - name: CMake build
