@@ -30,16 +30,11 @@ jobs:
        virtualenv -p python3.10 venv  #Alternative (requires `apt install python3-venv`): python3 -m venv venv
        source venv/bin/activate
        pip install -e .
-       #python -m m2isar.frontends.coredsl2.parser ../riscv-coredsl-extensions-1/etiss-s4e-mac.core_desc
-       #python -m m2isar.backends.etiss.writer ../riscv-coredsl-extensions-1/gen_model/etiss-s4e-mac.m2isarmodel --separate --static-scalars
-
+      
     - name: Run M2-ISA-R
       run: |
-        pwd
-        ls -al 
         cd M2-ISA-R
         source venv/bin/activate
-        ls -al
         python -m m2isar.frontends.coredsl2.parser ../riscv-coredsl-extensions-1/etiss-s4e-mac.core_desc
         python -m m2isar.backends.etiss.writer ../riscv-coredsl-extensions-1/gen_model/etiss-s4e-mac.m2isarmodel --separate --static-scalars
        
@@ -61,11 +56,7 @@ jobs:
       with:
         name: m2isar-model-files
         github-token: ${{ secrets.REPO_ACCESS_TOKEN }}
-
-    - run: |
-        pwd
-        ls -al
-        
+       
     - uses: actions/checkout@v4
       with:
         path: etiss_source
@@ -128,7 +119,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-    - name: Download build artifact
+    - name: Download Pre-built ETISS Artifact
       uses: actions/download-artifact@v4
       with:
         name: etiss_prebuilt
