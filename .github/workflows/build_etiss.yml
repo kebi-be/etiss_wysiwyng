@@ -165,7 +165,8 @@ jobs:
         pwd
         ls -al 
         cd ..
-        cd etiss_riscv_examples_s4emac         
+        cd etiss_riscv_examples_s4emac
+        ls -al 
         mkdir build && cd build
         make --version
         #cmake -DCMAKE_TOOLCHAIN_FILE=rv32gc-toolchain.cmake -DRISCV_TOOLCHAIN_PREFIX=$RISCV_GCC_PREFIX -DCMAKE_INSTALL_PREFIX=../install ..
