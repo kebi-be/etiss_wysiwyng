@@ -38,6 +38,7 @@ jobs:
         pwd
         ls -al 
         cd M2-ISA-R
+        source venv/bin/activate
         ls -al
         python -m m2isar.frontends.coredsl2.parser ../riscv-coredsl-extensions-1/etiss-s4e-mac.core_desc
         python -m m2isar.backends.etiss.writer ../riscv-coredsl-extensions-1/gen_model/etiss-s4e-mac.m2isarmodel --separate --static-scalars
