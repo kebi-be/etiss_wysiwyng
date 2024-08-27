@@ -125,6 +125,14 @@ jobs:
         name: etiss_prebuilt
         github-token: ${{ secrets.REPO_ACCESS_TOKEN }}
         path: etiss_prebuilt
+
+    - name: Download Pre-built Seal5
+      uses: actions/download-artifact@v4
+      with:
+        name: demo-export
+        github-token: ${{ secrets.REPO_ACCESS_TOKEN }}   
+        repository: kebi-be/seal5
+        path: seal5_prebuilt    
         
     - name: Download Cached GCC Binaries
       id: cache-gcc
@@ -166,6 +174,9 @@ jobs:
         ls -al 
         cd ..
         cd etiss_riscv_examples_s4emac
+        cd target_code/embench
+        git clone https://github.com/embench/embench-iot.git
+        cd embench-iot && git checkout 54fd9a0f10aabc662991567ca19ff3e61bfd3939
         ls -al 
         mkdir build && cd build
         make --version
