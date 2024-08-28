@@ -159,7 +159,7 @@ jobs:
       run: |
         pwd
         sudo apt -qq install -y build-essential make clang g++ git cmake libboost-system-dev libboost-filesystem-dev libboost-program-options-dev
-        git clone https://github.com/kebi-be/etiss_riscv_examples_s4emac.git --branch s4emac --recursive
+        git clone https://github.com/kebi-be/etiss_riscv_examples.git --branch s4emac_bk --recursive
         RISCV_GCC_PREFIX=/home/runner/work/etiss_wysiwyng/etiss_wysiwyng/gnu
         SEAL5_PREBUILT_DIR=/home/runner/work/etiss_wysiwyng/etiss_wysiwyng/seal5_prebuilt
         RISCV_GCC_NAME=riscv32-unknown-elf
@@ -170,7 +170,7 @@ jobs:
         ls $SEAL5_PREBUILT_DIR
         export PATH=$RISCV_GCC_PREFIX/bin/:$SEAL5_PREBUILT_DIR/bin/:$PATH 
         echo $PATH
-        cd etiss_riscv_examples_s4emac
+        cd etiss_riscv_examples
         cd target_code/embench
         git clone https://github.com/embench/embench-iot.git
         cd embench-iot && git checkout 54fd9a0f10aabc662991567ca19ff3e61bfd3939
@@ -183,13 +183,13 @@ jobs:
         #cmake -DCMAKE_TOOLCHAIN_FILE=rv32gc-toolchain.cmake -DRISCV_TOOLCHAIN_PREFIX=$RISCV_GCC_PREFIX -DCMAKE_INSTALL_PREFIX=../install ..
 
         #cmake  -DCMAKE_CXX_COMPILER=g++ -DCMAKE_C_COMPILER=gcc -DCMAKE_TOOLCHAIN_FILE=/home/runner/work/etiss_wysiwyng/etiss_wysiwyng/etiss_riscv_examples/rv32gc-llvm-toolchain.cmake -DRISCV_TOOLCHAIN_PREFIX=/home/runner/work/etiss_wysiwyng/etiss_wysiwyng/gnu -DCMAKE_INSTALL_PREFIX=../install ..
-        cmake -DCMAKE_TOOLCHAIN_FILE=/home/runner/work/etiss_wysiwyng/etiss_wysiwyng/etiss_riscv_examples_s4emac/rv32gc-llvm-toolchain.cmake -DCMAKE_INSTALL_PREFIX=$(pwd)/install -DRISCV_ARCH=$ARCH -DRISCV_ABI=$ABI -DRISCV_TOOLCHAIN_PREFIX=$RISCV_GCC_PREFIX -DRISCV_TOOLCHAIN_BASENAME=$RISCV_GCC_NAME ..
+        cmake -DCMAKE_TOOLCHAIN_FILE=/home/runner/work/etiss_wysiwyng/etiss_wysiwyng/etiss_riscv_examples/rv32gc-llvm-toolchain.cmake -DCMAKE_INSTALL_PREFIX=$(pwd)/install -DRISCV_ARCH=$ARCH -DRISCV_ABI=$ABI -DRISCV_TOOLCHAIN_PREFIX=$RISCV_GCC_PREFIX -DRISCV_TOOLCHAIN_BASENAME=$RISCV_GCC_NAME ..
         make -j$(nproc) install    
         make install
     - name: Run ETISS Default Configuration Test
       run: |
         echo "Finished"
         pwd
-        ls -al etiss_riscv_examples_s4emac/install/ini/
-        etiss_prebuilt/bin/bare_etiss_processor -i etiss_riscv_examples_s4emac/install/ini/hello_world.ini
+        ls -al etiss_riscv_examples/install/ini/
+        etiss_prebuilt/bin/bare_etiss_processor -i etiss_riscv_examples/install/ini/hello_world.ini
     needs: build-etiss
