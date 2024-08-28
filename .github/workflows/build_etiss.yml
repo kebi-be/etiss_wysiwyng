@@ -161,13 +161,14 @@ jobs:
         sudo apt -qq install -y build-essential make clang g++ git cmake libboost-system-dev libboost-filesystem-dev libboost-program-options-dev
         git clone https://github.com/kebi-be/etiss_riscv_examples_s4emac.git --branch s4emac --recursive
         RISCV_GCC_PREFIX=/home/runner/work/etiss_wysiwyng/etiss_wysiwyng/gnu
+        SEAL5_PREBUILT_DIR=/home/runner/work/etiss_wysiwyng/etiss_wysiwyng/seal5_prebuilt
         RISCV_GCC_NAME=riscv32-unknown-elf
         ARCH=rv32imc
         ETISS_ARCH=RV32IMACFD
         PROG=hello_world
         ABI=ilp32
-        ls seal5_prebuilt
-        export PATH=$RISCV_GCC_PREFIX/bin/:seal5_prebuilt/bin/:$PATH 
+        ls $SEAL5_PREBUILT_DIR
+        export PATH=$RISCV_GCC_PREFIX/bin/:$SEAL5_PREBUILT_DIR/bin/:$PATH 
         echo $PATH
         pwd
         ls -al
