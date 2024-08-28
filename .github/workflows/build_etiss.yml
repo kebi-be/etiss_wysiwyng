@@ -179,6 +179,8 @@ jobs:
         git clone https://github.com/embench/embench-iot.git
         cd embench-iot && git checkout 54fd9a0f10aabc662991567ca19ff3e61bfd3939
         ls -al 
+        cd ../../..
+        pwd
         mkdir build && cd build
         make --version
         #cmake -DCMAKE_TOOLCHAIN_FILE=rv32gc-toolchain.cmake -DRISCV_TOOLCHAIN_PREFIX=$RISCV_GCC_PREFIX -DCMAKE_INSTALL_PREFIX=../install ..
