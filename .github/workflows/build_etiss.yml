@@ -170,12 +170,6 @@ jobs:
         ls $SEAL5_PREBUILT_DIR
         export PATH=$RISCV_GCC_PREFIX/bin/:$SEAL5_PREBUILT_DIR/bin/:$PATH 
         echo $PATH
-        pwd
-        ls -al
-        cd gnu
-        pwd
-        ls -al 
-        cd ..
         cd etiss_riscv_examples_s4emac
         cd target_code/embench
         git clone https://github.com/embench/embench-iot.git
@@ -183,6 +177,7 @@ jobs:
         ls -al 
         cd ../../..
         pwd
+        ls -al ../$SEAL5_PREBUILT_DIR
         mkdir build && cd build
         make --version
         #cmake -DCMAKE_TOOLCHAIN_FILE=rv32gc-toolchain.cmake -DRISCV_TOOLCHAIN_PREFIX=$RISCV_GCC_PREFIX -DCMAKE_INSTALL_PREFIX=../install ..
