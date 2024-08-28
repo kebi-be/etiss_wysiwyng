@@ -166,7 +166,8 @@ jobs:
         ETISS_ARCH=RV32IMACFD
         PROG=hello_world
         ABI=ilp32
-        export PATH=$RISCV_GCC_PREFIX/bin/:$PATH
+        ls seal5_prebuilt
+        export PATH=$RISCV_GCC_PREFIX/bin/:seal5_prebuilt/bin/:$PATH 
         echo $PATH
         pwd
         ls -al
