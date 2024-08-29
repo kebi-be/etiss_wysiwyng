@@ -23,7 +23,8 @@ jobs:
     
     - name: Setup M2-ISA-R
       run: |
-       git clone https://github.com/kebi-be/riscv-coredsl-extensions-1.git --branch etiss --recursive
+       #git clone https://github.com/kebi-be/riscv-coredsl-extensions-1.git 
+       git clone https://github.com/PhilippvK/riscv-coredsl-extensions/tree/etiss --branch etiss --recursive
        git clone https://github.com/tum-ei-eda/etiss_arch_riscv.git --recursive --branch coredsl_exceptions
        git clone https://github.com/tum-ei-eda/M2-ISA-R.git --branch coredsl2
        cd M2-ISA-R
@@ -159,7 +160,8 @@ jobs:
       run: |
         pwd
         sudo apt -qq install -y build-essential make clang g++ git cmake libboost-system-dev libboost-filesystem-dev libboost-program-options-dev
-        git clone https://github.com/kebi-be/etiss_riscv_examples.git --branch s4emac_bk --recursive
+        #git clone https://github.com/kebi-be/etiss_riscv_examples.git
+        git clone https://github.com/tum-ei-eda/etiss_riscv_examples.git --branch s4emac --recursive
         RISCV_GCC_PREFIX=/home/runner/work/etiss_wysiwyng/etiss_wysiwyng/gnu
         SEAL5_PREBUILT_DIR=/home/runner/work/etiss_wysiwyng/etiss_wysiwyng/seal5_prebuilt
         RISCV_GCC_NAME=riscv32-unknown-elf
@@ -171,12 +173,12 @@ jobs:
         export PATH=$RISCV_GCC_PREFIX/bin/:$SEAL5_PREBUILT_DIR/bin/:$PATH 
         echo $PATH
         cd etiss_riscv_examples
-        cd target_code/embench
-        git clone https://github.com/embench/embench-iot.git
-        cd embench-iot && git checkout 54fd9a0f10aabc662991567ca19ff3e61bfd3939
-        ls -al 
-        cd ../../..
-        pwd
+        #cd target_code/embench
+        #git clone https://github.com/embench/embench-iot.git
+        #cd embench-iot && git checkout 54fd9a0f10aabc662991567ca19ff3e61bfd3939
+        #ls -al 
+        #cd ../../..
+        #pwd
         ls -al ../$SEAL5_PREBUILT_DIR
         mkdir build && cd build
         make --version
