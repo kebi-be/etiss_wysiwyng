@@ -10,6 +10,7 @@ on:
 
 env:
   BUILD_TYPE: Release
+  SEAL5_PREBUILT_DIR: /home/runner/work/etiss_wysiwyng/etiss_wysiwyng/seal5_prebuilt
 
 jobs:
   setup-run-M2ISAR:
@@ -127,7 +128,7 @@ jobs:
         github-token: ${{ secrets.REPO_ACCESS_TOKEN }}
         path: etiss_prebuilt
 
-    - name: Download Pre-built Seal5
+    - name: Download Seal5 Pre-built
       uses: actions/download-artifact@v4
       with:
         name: demo-export
@@ -135,7 +136,14 @@ jobs:
         repository: kebi-be/seal5
         path: seal5_prebuilt
         run-id: 10578440700
-        
+
+    - name: Unpack Seal5 Pre-Built
+      run: |
+        cd $SEAL5_PREBUILT_DIR
+        tar xvf seal5_llvm.tar.gz
+        rm seal5_llvm.tar.gz
+        ls -al
+            
     - name: Download Cached GCC Binaries
       id: cache-gcc
       uses: actions/cache@v4
@@ -158,12 +166,11 @@ jobs:
     
     - name: Build ETISS RISCV Examples for Testing
       run: |
-        pwd
         sudo apt -qq install -y build-essential make clang g++ git cmake libboost-system-dev libboost-filesystem-dev libboost-program-options-dev
         #git clone https://github.com/kebi-be/etiss_riscv_examples.git
         git clone https://github.com/tum-ei-eda/etiss_riscv_examples.git --branch s4emac --recursive
         RISCV_GCC_PREFIX=/home/runner/work/etiss_wysiwyng/etiss_wysiwyng/gnu
-        SEAL5_PREBUILT_DIR=/home/runner/work/etiss_wysiwyng/etiss_wysiwyng/seal5_prebuilt
+        # SEAL5_PREBUILT_DIR=/home/runner/work/etiss_wysiwyng/etiss_wysiwyng/seal5_prebuilt
         RISCV_GCC_NAME=riscv32-unknown-elf
         ARCH=rv32imc
         ETISS_ARCH=RV32IMACFD
@@ -179,12 +186,7 @@ jobs:
         #ls -al 
         #cd ../../..
         #pwd
-        cd $SEAL5_PREBUILT_DIR
-        tar xvf seal5_llvm.tar.gz
-        rm seal5_llvm.tar.gz
-        ls -al
-        pwd
-        ls -al $SEAL5_PREBUILT_DIR
+
         mkdir build && cd build
         make --version
         #cmake -DCMAKE_TOOLCHAIN_FILE=rv32gc-toolchain.cmake -DRISCV_TOOLCHAIN_PREFIX=$RISCV_GCC_PREFIX -DCMAKE_INSTALL_PREFIX=../install ..
