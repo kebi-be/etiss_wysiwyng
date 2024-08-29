@@ -179,7 +179,7 @@ jobs:
         #ls -al 
         #cd ../../..
         #pwd
-        ls -al ../$SEAL5_PREBUILT_DIR
+        ls -al $SEAL5_PREBUILT_DIR
         mkdir build && cd build
         make --version
         #cmake -DCMAKE_TOOLCHAIN_FILE=rv32gc-toolchain.cmake -DRISCV_TOOLCHAIN_PREFIX=$RISCV_GCC_PREFIX -DCMAKE_INSTALL_PREFIX=../install ..
