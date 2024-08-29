@@ -179,6 +179,11 @@ jobs:
         #ls -al 
         #cd ../../..
         #pwd
+        cd $SEAL5_PREBUILT_DIR
+        tar xvf seal5_llvm.tar.gz
+        rm seal5_llvm.tar.gz
+        ls -al
+        pwd
         ls -al $SEAL5_PREBUILT_DIR
         mkdir build && cd build
         make --version
