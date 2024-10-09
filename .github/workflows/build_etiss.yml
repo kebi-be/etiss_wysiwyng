@@ -24,7 +24,7 @@ jobs:
     
     - name: Setup M2-ISA-R
       run: |
-       git clone https://github.com/kebi-be/riscv-coredsl-extensions-1.git --branch etiss --recursive
+       git clone https://github.com/kebi-be/riscv-coredsl-extensions.git --branch etiss --recursive
        # git clone https://github.com/PhilippvK/riscv-coredsl-extensions.git --branch etiss --recursive
        git clone https://github.com/tum-ei-eda/etiss_arch_riscv.git --recursive --branch coredsl_exceptions
        git clone https://github.com/tum-ei-eda/M2-ISA-R.git --branch coredsl2
@@ -37,15 +37,15 @@ jobs:
       run: |
         cd M2-ISA-R
         source venv/bin/activate
-        python -m m2isar.frontends.coredsl2.parser ../riscv-coredsl-extensions-1/etiss-s4e-mac.core_desc
-        python -m m2isar.backends.etiss.writer ../riscv-coredsl-extensions-1/gen_model/etiss-s4e-mac.m2isarmodel --separate --static-scalars
+        python -m m2isar.frontends.coredsl2.parser ../riscv-coredsl-extensions/etiss-s4e-mac.core_desc
+        python -m m2isar.backends.etiss.writer ../riscv-coredsl-extensions/gen_model/etiss-s4e-mac.m2isarmodel --separate --static-scalars
        
     - name: Upload M2ISAR Model artifacts
       uses: actions/upload-artifact@v4
       with:
          name: m2isar-model-files
          path: |
-           riscv-coredsl-extensions-1/gen_output
+           riscv-coredsl-extensions/gen_output
             
   patch-etiss-arch:
     runs-on: ubuntu-22.04
