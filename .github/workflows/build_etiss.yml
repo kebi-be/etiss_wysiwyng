@@ -10,7 +10,7 @@ on:
 
 env:
   BUILD_TYPE: Release
-  SEAL5_PREBUILT_DIR: /home/runner/work/etiss_wysiwyng/etiss_wysiwyng/seal5_prebuilt
+  SEAL5_PREBUILT_DIR: /home/runner/work/etiss_wysiwyng/etiss_wysiwyng/seal5_prebuilt/release
   RISCV_GCC_NAME: riscv32-unknown-elf
   ARCH: rv32imc_xs4emac
   ETISS_ARCH: RV32IMCXS4EMAC
@@ -192,6 +192,7 @@ jobs:
       run: |
         echo "Testing: Running binanry on ETISS "
         chmod +x /home/runner/work/etiss_prebuilt/bin/bare_etiss_processor
+        chmod +x $SEAL5_PREBUILT_DIR/bin/*
         export PATH=$RISCV_GCC_PREFIX/bin/:$SEAL5_PREBUILT_DIR/bin/:/home/runner/work/etiss_prebuilt/bin:$PATH 
         bare_etiss_processor -ietiss_riscv_examples/install/ini/s4emac.ini --arch.cpu=$ETISS_ARCH
        
