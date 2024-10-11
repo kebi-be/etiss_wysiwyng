@@ -2,7 +2,7 @@ name: Build ETISS
 
 on:
   repository_dispatch:
-    types: [s4e_cdl_event, seal5-event]
+    types: [s4e-cdl-event, seal5-event]
 #push:
  #   branches: [ "master" ]
  # pull_request:
@@ -11,6 +11,11 @@ on:
 env:
   BUILD_TYPE: Release
   SEAL5_PREBUILT_DIR: /home/runner/work/etiss_wysiwyng/etiss_wysiwyng/seal5_prebuilt
+  RISCV_GCC_NAME: riscv32-unknown-elf
+  ARCH: rv32imc_xs4emac
+  ETISS_ARCH: RV32IMCXS4EMAC
+  PROG: s4emac
+  ABI: ilp32
 
 jobs:
   setup-run-M2ISAR:
@@ -24,7 +29,7 @@ jobs:
     
     - name: Setup M2-ISA-R
       run: |
-       git clone https://github.com/kebi-be/riscv-coredsl-extensions.git --branch etiss --recursive
+       git clone https://github.com/kebi-be/riscv-coredsl-extensions.git --branch main --recursive
        # git clone https://github.com/PhilippvK/riscv-coredsl-extensions.git --branch etiss --recursive
        git clone https://github.com/tum-ei-eda/etiss_arch_riscv.git --recursive --branch coredsl_exceptions
        git clone https://github.com/tum-ei-eda/M2-ISA-R.git --branch coredsl2
@@ -101,7 +106,7 @@ jobs:
       
     - name: CMake config
       run: |
-        cmake -B etiss_build -S etiss_source -DCMAKE_INSTALL_PREFIX=etiss_prebuilt -DCMAKE_BUILD_TYPE=$BUILD_TYPE
+        cmake -B etiss_build -S etiss_source -DCMAKE_INSTALL_PREFIX=/home/runner/work/etiss_prebuilt -DCMAKE_BUILD_TYPE=$BUILD_TYPE
         
     - name: CMake build
       run: |
@@ -115,35 +120,41 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: etiss_prebuilt
-        path: etiss_prebuilt   
-
-    
+        path: /home/runner/work/etiss_prebuilt   
+   
   test:
     runs-on: ubuntu-latest
+    needs: build-etiss
     steps:
     - name: Download Pre-built ETISS Artifact
       uses: actions/download-artifact@v4
       with:
         name: etiss_prebuilt
         github-token: ${{ secrets.REPO_ACCESS_TOKEN }}
-        path: etiss_prebuilt
+        path: /home/runner/work/etiss_prebuilt
 
-    - name: Download Seal5 Pre-built
+    - name: Download Cached Seal5 Binaries
+      id: cache-seal5
+      uses: actions/cache@v4
+      env:
+        cache-name: cache-seal5-binaries
+      with:
+        path: ./seal5_prebuilt
+        key: seal5-binaries-${{ steps.date.outputs.date }}
+        restore-keys: |
+          seal5-binaries-
+        
+
+    - if: ${{ steps.cache-seal5.outputs.cache-hit != 'true' }} 
+      name: Download Seal5 Pre-built
       uses: actions/download-artifact@v4
       with:
-        name: demo-export
+        name: demo-install
         github-token: ${{ secrets.REPO_ACCESS_TOKEN }}   
         repository: kebi-be/seal5
-        path: seal5_prebuilt
-        run-id: 10578440700
-
-    - name: Unpack Seal5 Pre-Built
-      run: |
-        cd $SEAL5_PREBUILT_DIR
-        tar xvf seal5_llvm.tar.gz
-        rm seal5_llvm.tar.gz
-        ls -al
-            
+        path: /home/runner/work/etiss_wysiwyng/etiss_wysiwyng/seal5_prebuilt
+        run-id: 10631506372
+           
     - name: Download Cached GCC Binaries
       id: cache-gcc
       uses: actions/cache@v4
@@ -161,44 +172,32 @@ jobs:
          wget https://syncandshare.lrz.de/dl/fi2p5Ds5PHktjmZGKzR9tx/GCC/default/2023.09.27/Ubuntu/22.04/rv32imc_ilp32.tar.xz
          tar xvf rv32imc_ilp32.tar.xz
          rm rv32imc_ilp32.tar.xz
-         ls -al
-         pwd
     
     - name: Build ETISS RISCV Examples for Testing
       run: |
         sudo apt -qq install -y build-essential make clang g++ git cmake libboost-system-dev libboost-filesystem-dev libboost-program-options-dev
-        #git clone https://github.com/kebi-be/etiss_riscv_examples.git
-        git clone https://github.com/tum-ei-eda/etiss_riscv_examples.git --branch s4emac --recursive
+        git clone https://github.com/kebi-be/etiss_riscv_examples.git --branch s4emac --recursive
         RISCV_GCC_PREFIX=/home/runner/work/etiss_wysiwyng/etiss_wysiwyng/gnu
-        # SEAL5_PREBUILT_DIR=/home/runner/work/etiss_wysiwyng/etiss_wysiwyng/seal5_prebuilt
-        RISCV_GCC_NAME=riscv32-unknown-elf
-        ARCH=rv32imc
-        ETISS_ARCH=RV32IMACFD
-        PROG=hello_world
-        ABI=ilp32
-        ls $SEAL5_PREBUILT_DIR
         export PATH=$RISCV_GCC_PREFIX/bin/:$SEAL5_PREBUILT_DIR/bin/:$PATH 
-        echo $PATH
         cd etiss_riscv_examples
-        #cd target_code/embench
-        #git clone https://github.com/embench/embench-iot.git
-        #cd embench-iot && git checkout 54fd9a0f10aabc662991567ca19ff3e61bfd3939
-        #ls -al 
-        #cd ../../..
-        #pwd
-
         mkdir build && cd build
         make --version
-        cmake -DCMAKE_TOOLCHAIN_FILE=rv32gc-toolchain.cmake -DRISCV_TOOLCHAIN_PREFIX=$RISCV_GCC_PREFIX -DCMAKE_INSTALL_PREFIX=../install -DRISCV_ARCH=$ARCH -DRISCV_ABI=$ABI -DRISCV_TOOLCHAIN_PREFIX=$RISCV_GCC_PREFIX -DRISCV_TOOLCHAIN_BASENAME=$RISCV_GCC_NAME ..
-
-        #cmake  -DCMAKE_CXX_COMPILER=g++ -DCMAKE_C_COMPILER=gcc -DCMAKE_TOOLCHAIN_FILE=/home/runner/work/etiss_wysiwyng/etiss_wysiwyng/etiss_riscv_examples/rv32gc-llvm-toolchain.cmake -DRISCV_TOOLCHAIN_PREFIX=/home/runner/work/etiss_wysiwyng/etiss_wysiwyng/gnu -DCMAKE_INSTALL_PREFIX=../install ..
-        #cmake -DCMAKE_TOOLCHAIN_FILE=/home/runner/work/etiss_wysiwyng/etiss_wysiwyng/etiss_riscv_examples/rv32gc-llvm-toolchain.cmake -DCMAKE_INSTALL_PREFIX=$(pwd)/install -DRISCV_ARCH=$ARCH -DRISCV_ABI=$ABI -DRISCV_TOOLCHAIN_PREFIX=$RISCV_GCC_PREFIX -DRISCV_TOOLCHAIN_BASENAME=$RISCV_GCC_NAME ..
+        cmake -DCMAKE_TOOLCHAIN_FILE=rv32gc-llvm-toolchain.cmake -DRISCV_TOOLCHAIN_PREFIX=$RISCV_GCC_PREFIX -DCMAKE_INSTALL_PREFIX=../install -DRISCV_ARCH=$ARCH -DRISCV_ABI=$ABI -DRISCV_TOOLCHAIN_PREFIX=$RISCV_GCC_PREFIX -DRISCV_TOOLCHAIN_BASENAME=$RISCV_GCC_NAME ..
         make -j$(nproc) install    
         make install
+        
     - name: Run ETISS Default Configuration Test
       run: |
-        echo "Finished"
-        pwd
-        ls -al etiss_riscv_examples/install/ini/
-        etiss_prebuilt/bin/bare_etiss_processor -i etiss_riscv_examples/install/ini/hello_world.ini
-    needs: build-etiss
+        echo "Testing: Running binanry on ETISS "
+        chmod +x /home/runner/work/etiss_prebuilt/bin/bare_etiss_processor
+        export PATH=$RISCV_GCC_PREFIX/bin/:$SEAL5_PREBUILT_DIR/bin/:/home/runner/work/etiss_prebuilt/bin:$PATH 
+        bare_etiss_processor -ietiss_riscv_examples/install/ini/s4emac.ini --arch.cpu=$ETISS_ARCH
+       
+    - name: Send ETISS RUN-ID to Seal5
+      uses: peter-evans/repository-dispatch@v3
+      with:
+         token: ${{ secrets.REPO_ACCESS_TOKEN }}
+         repository: ${{ 'kebi-be/seal5' }}
+         event-type: etiss-event
+         client-payload: '{"parent_repo_run-id": "${{ github.event.client_payload.run_id }}", "etiss_run_id": "${{ github.run_id }}"}'
+         
